@@ -4,57 +4,62 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inventory Count</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0e0f11;
-    --surface: #16181c;
-    --border: #2a2d35;
-    --accent: #c8f135;
-    --accent-dim: rgba(200,241,53,0.10);
-    --red: #ff4d4d;
-    --red-dim: rgba(255,77,77,0.10);
-    --yellow: #ffc84a;
+    --bg:         #07080C;
+    --surface:    #0F121B;
+    --border:     #252A35;
+    --accent:     #C8FD0E;
+    --accent-dim: rgba(200,253,14,0.10);
+    --cyan:       #66E6FF;
+    --red:        #ff4d4d;
+    --red-dim:    rgba(255,77,77,0.10);
+    --yellow:     #ffc84a;
     --yellow-dim: rgba(255,200,74,0.12);
-    --text: #e8eaf0;
-    --muted: #6b7080;
-    --mono: 'DM Mono', monospace;
-    --display: 'Syne', sans-serif;
+    --text:       #F8F8F6;
+    --muted:      #A5ABBA;
+    --fog:        #A5ABBA;
+    --mono:       'DM Mono', monospace;
+    --body:       'Manrope', sans-serif;
+    --display:    'Syne', sans-serif;
   }
 
-  body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; padding: 32px 16px 64px; }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); min-height: 100vh; padding: 32px 16px 64px; }
 
-  header { max-width: 980px; margin: 0 auto 32px; }
-  header h1 { font-family: var(--display); font-size: clamp(26px,5vw,46px); font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
+  header { max-width: 1040px; margin: 0 auto 32px; }
+  header h1 { font-family: var(--display); font-size: clamp(28px,5vw,50px); font-weight: 800; letter-spacing: -1.5px; line-height: 1; margin-bottom: 6px; }
   header h1 span { color: var(--accent); }
-  header p { font-size: 12px; color: var(--muted); }
+  header p { font-size: 13px; color: var(--muted); font-family: var(--body); }
 
-  .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; max-width: 980px; margin: 0 auto 22px; }
-  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; flex: 1; min-width: 115px; }
-  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
-  .stat-value { font-size: 21px; font-weight: 500; }
+  .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; max-width: 1040px; margin: 0 auto 22px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 120px; }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; font-family: var(--mono); }
+  .stat-value { font-size: 22px; font-weight: 700; font-family: var(--mono); }
   .stat-value.bad  { color: var(--red); }
   .stat-value.good { color: var(--accent); }
 
-  .toolbar { max-width: 980px; margin: 0 auto 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .toolbar { max-width: 1040px; margin: 0 auto 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
-  .btn { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.5px; padding: 9px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn { font-family: var(--body); font-size: 13px; font-weight: 600; letter-spacing: 0.3px; padding: 9px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .btn:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-primary { background: var(--accent); color: #0e0f11; border-color: var(--accent); font-weight: 700; }
-  .btn-primary:hover { background: #d6f54a; color: #0e0f11; }
+  .btn-primary { background: var(--accent); color: #07080C; border-color: var(--accent); font-weight: 700; }
+  .btn-primary:hover { background: #d4ff1a; color: #07080C; border-color: #d4ff1a; }
+  .btn-print { background: var(--surface); border-color: var(--cyan); color: var(--cyan); }
+  .btn-print:hover { background: rgba(102,230,255,0.08); }
 
-  .search { flex: 1; min-width: 180px; font-family: var(--mono); font-size: 13px; padding: 9px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .search { flex: 1; min-width: 180px; font-family: var(--body); font-size: 13px; padding: 9px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.15s; }
   .search:focus { border-color: var(--accent); }
   .search::placeholder { color: var(--muted); }
 
-  .table-wrap { max-width: 980px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
+  .table-wrap { max-width: 1040px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
 
-  table { width: 100%; border-collapse: collapse; min-width: 780px; }
-  thead { background: #1c1f26; border-bottom: 1px solid var(--border); }
-  th { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 12px 14px; text-align: left; white-space: nowrap; }
-  th .sub { display: block; font-size: 9px; color: #3a3f4a; letter-spacing: 0.5px; text-transform: none; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; min-width: 820px; }
+  thead { background: #0c0f17; border-bottom: 1px solid var(--border); }
+  th { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 12px 14px; text-align: left; white-space: nowrap; font-family: var(--mono); }
+  th .sub { display: block; font-size: 9px; color: #3a3f4a; letter-spacing: 0.5px; text-transform: none; margin-top: 2px; font-family: var(--mono); }
 
   tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
   tbody tr:last-child { border-bottom: none; }
@@ -62,19 +67,18 @@
 
   td { padding: 9px 14px; vertical-align: middle; }
 
-  .sku-name { min-width: 150px; }
-  .sku-name input { font-family: var(--mono); font-size: 13px; font-weight: 500; background: transparent; border: none; color: var(--text); outline: none; width: 100%; min-width: 130px; }
+  .sku-name { min-width: 160px; }
+  .sku-name input { font-family: var(--body); font-size: 13px; font-weight: 500; background: transparent; border: none; color: var(--text); outline: none; width: 100%; min-width: 140px; }
   .sku-name input:focus { background: rgba(255,255,255,0.04); border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
 
   .num-input { font-family: var(--mono); font-size: 13px; width: 86px; padding: 5px 8px; background: rgba(255,255,255,0.04); border: 1px solid transparent; border-radius: 5px; color: var(--text); text-align: center; outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
   .num-input::-webkit-outer-spin-button, .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
   .num-input:focus { border-color: var(--accent); }
 
-  /* counted cases input — green tint */
-  .count-input { background: rgba(200,241,53,0.06) !important; border-color: rgba(200,241,53,0.2) !important; }
+  .count-input { background: rgba(200,253,14,0.06) !important; border-color: rgba(200,253,14,0.2) !important; }
   .count-input:focus { border-color: var(--accent) !important; }
 
-  .calc { font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+  .calc { font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; font-family: var(--mono); }
 
   .divider-col { border-left: 1px solid var(--border); }
 
@@ -82,11 +86,11 @@
   .diff-neg  { color: var(--red)    !important; }
   .diff-zero { color: var(--muted)  !important; }
 
-  .pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; letter-spacing: 0.5px; white-space: nowrap; }
-  .pill-over  { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(200,241,53,0.25); }
+  .pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; font-family: var(--mono); }
+  .pill-over  { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(200,253,14,0.25); }
   .pill-under { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(255,77,77,0.25); }
   .pill-exact { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(255,200,74,0.25); }
-  .pill-blank { background: rgba(107,112,128,0.1); color: var(--muted); border: 1px solid var(--border); }
+  .pill-blank { background: rgba(165,171,186,0.08); color: var(--muted); border: 1px solid var(--border); }
 
   .row-under { background: var(--red-dim)    !important; }
   .row-over  { background: var(--accent-dim) !important; }
@@ -98,17 +102,98 @@
   .empty-state .big { font-size: 36px; margin-bottom: 8px; }
 
   /* Modal */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
   .modal-overlay.open { display: flex; }
   .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; width: 100%; max-width: 340px; }
   .modal h2 { font-family: var(--display); font-size: 20px; font-weight: 800; margin-bottom: 20px; }
   .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; }
-  .field input { width: 100%; font-family: var(--mono); font-size: 13px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; font-family: var(--mono); }
+  .field input { width: 100%; font-family: var(--body); font-size: 13px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.15s; }
   .field input:focus { border-color: var(--accent); }
   .modal-hint { font-size: 11px; color: var(--muted); margin-top: -10px; margin-bottom: 16px; }
   .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
   .modal-actions .btn { flex: 1; text-align: center; }
+
+  /* ── Print styles ────────────────────────────────────── */
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    body {
+      background: #fff !important;
+      color: #07080C !important;
+      padding: 16px !important;
+      font-family: 'Manrope', sans-serif !important;
+    }
+
+    /* Hide interactive/nav elements */
+    .toolbar, .modal-overlay, .del-btn, .search,
+    .btn, .num-input, .sku-name input { display: none !important; }
+
+    /* Show SKU names as static text */
+    .sku-name { min-width: 160px; }
+    .sku-name::before { content: attr(data-name); font-weight: 500; font-size: 12px; color: #07080C; }
+
+    header { margin-bottom: 16px; }
+    header h1 { font-size: 28px !important; color: #07080C !important; letter-spacing: -1px; }
+    header h1 span { color: #07080C !important; }
+    header p { color: #555 !important; font-size: 11px; }
+
+    .summary-bar {
+      display: flex !important;
+      gap: 8px !important;
+      margin-bottom: 14px !important;
+    }
+    .stat {
+      background: #f4f4f2 !important;
+      border: 1px solid #ccc !important;
+      border-radius: 6px;
+      padding: 10px 14px !important;
+    }
+    .stat-label { color: #555 !important; }
+    .stat-value { color: #07080C !important; font-size: 18px !important; }
+    .stat-value.bad  { color: #c0392b !important; }
+    .stat-value.good { color: #27ae60 !important; }
+
+    .table-wrap {
+      background: #fff !important;
+      border: 1px solid #ccc !important;
+      border-radius: 6px;
+      overflow: visible !important;
+    }
+
+    table { min-width: unset !important; }
+    thead { background: #f4f4f2 !important; border-bottom: 1px solid #ccc !important; }
+    th { color: #555 !important; font-size: 9px !important; padding: 8px 10px !important; }
+    th .sub { color: #aaa !important; }
+    td { padding: 7px 10px !important; border-bottom: 1px solid #e8e8e6 !important; }
+    tbody tr { border-bottom: 1px solid #e8e8e6 !important; }
+    tbody tr:last-child { border-bottom: none !important; }
+
+    .calc { color: #444 !important; font-size: 12px !important; }
+    .diff-pos { color: #27ae60 !important; }
+    .diff-neg { color: #c0392b !important; }
+    .diff-zero { color: #888 !important; }
+
+    .row-under { background: rgba(192,57,43,0.06) !important; }
+    .row-over  { background: rgba(39,174,96,0.06) !important; }
+
+    .pill { font-size: 9px !important; padding: 1px 6px !important; }
+    .pill-over  { background: rgba(39,174,96,0.1)  !important; color: #27ae60 !important; border-color: rgba(39,174,96,0.3) !important; }
+    .pill-under { background: rgba(192,57,43,0.1) !important; color: #c0392b !important; border-color: rgba(192,57,43,0.3) !important; }
+    .pill-exact { background: rgba(243,156,18,0.1) !important; color: #b7770d !important; border-color: rgba(243,156,18,0.3) !important; }
+    .pill-blank { background: #f0f0ee !important; color: #888 !important; border-color: #ccc !important; }
+
+    /* Print timestamp footer */
+    body::after {
+      content: "Printed " attr(data-printed);
+      display: block;
+      margin-top: 16px;
+      font-size: 10px;
+      color: #aaa;
+      text-align: right;
+      font-family: 'DM Mono', monospace;
+    }
+  }
 </style>
 </head>
 <body>
@@ -120,6 +205,7 @@
 
 <div class="summary-bar">
   <div class="stat"><div class="stat-label">SKUs</div><div class="stat-value" id="stat-skus">0</div></div>
+  <div class="stat"><div class="stat-label">Counted</div><div class="stat-value" id="stat-counted">0</div></div>
   <div class="stat"><div class="stat-label">SKUs Over</div><div class="stat-value good" id="stat-over">0</div></div>
   <div class="stat"><div class="stat-label">SKUs Under</div><div class="stat-value bad" id="stat-under">0</div></div>
   <div class="stat"><div class="stat-label">Net Variance (ea)</div><div class="stat-value" id="stat-net">—</div></div>
@@ -130,6 +216,7 @@
   <button class="btn" onclick="openModal()">+ Add SKU</button>
   <button class="btn" onclick="clearCounts()">Clear Counts</button>
   <button class="btn" onclick="clearAll()">Clear All</button>
+  <button class="btn btn-print" onclick="printSheet()">🖨 Print</button>
   <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
 </div>
 
@@ -145,7 +232,7 @@
         <th>Count Eaches<span class="sub">loose eaches</span></th>
         <th>Count Total (ea)<span class="sub">auto-calc</span></th>
         <th>Diff (cases)<span class="sub">count − system</span></th>
-        <th>Diff (ea)<span class="sub">count − system</span></th>
+        <th>Diff (ea)<span class="sub">rounded up</span></th>
         <th>Status</th>
         <th></th>
       </tr>
@@ -159,7 +246,7 @@
     <h2>Add SKU</h2>
     <div class="field">
       <label>Product Name / SKU</label>
-      <input type="text" id="m-name" placeholder="e.g. Coca-Cola 12pk" />
+      <input type="text" id="m-name" placeholder="e.g. Ribeye 10lb" />
     </div>
     <div class="field">
       <label>Units Per Case</label>
@@ -192,16 +279,18 @@
     }
 
     visible.forEach(sku => {
-      const sysEa     = round2(sku.sysCases * sku.upc);
-      const hasCases  = sku.cntCases  !== null && sku.cntCases  !== undefined;
-      const hasEaches = sku.cntEaches !== null && sku.cntEaches !== undefined;
-      const has       = hasCases || hasEaches;
+      const sysEa        = round2(sku.sysCases * sku.upc);
+      const hasCases     = sku.cntCases  !== null && sku.cntCases  !== undefined;
+      const hasEaches    = sku.cntEaches !== null && sku.cntEaches !== undefined;
+      const has          = hasCases || hasEaches;
       const cntCasesVal  = hasCases  ? sku.cntCases  : 0;
       const cntEachesVal = hasEaches ? sku.cntEaches : 0;
-      const cntEa    = has ? round2(cntCasesVal * sku.upc + cntEachesVal) : null;
+      const cntEa        = has ? round2(cntCasesVal * sku.upc + cntEachesVal) : null;
       const cntCasesDecimal = has ? round4(cntEa / sku.upc) : null;
-      const diffCases = has ? round4(cntCasesDecimal - sku.sysCases) : null;
-      const diff      = has ? round2(cntEa - sysEa) : null;
+      const diffCases    = has ? round4(cntCasesDecimal - sku.sysCases) : null;
+      const diffRaw      = has ? round2(cntEa - sysEa) : null;
+      // Round up the absolute difference to whole eaches, preserve sign
+      const diff         = diffRaw === null ? null : (diffRaw < 0 ? -Math.ceil(Math.abs(diffRaw)) : Math.ceil(diffRaw));
 
       const isUnder = diff !== null && diff < 0;
       const isOver  = diff !== null && diff > 0;
@@ -211,17 +300,18 @@
       else if (isOver) tr.classList.add('row-over');
 
       const diffCasesStr = diffCases === null ? '—' : (diffCases > 0 ? '+' : '') + fmt4(diffCases);
-      const diffStr      = diff === null ? '—' : (diff > 0 ? '+' : '') + fmt(diff);
+      const diffStr      = diff === null ? '—' : (diff > 0 ? '+' : '') + diff;
       const diffClass    = diff === null ? 'diff-zero' : diff > 0 ? 'diff-pos' : diff < 0 ? 'diff-neg' : 'diff-zero';
 
-      const pill = diff === null
+      const absEa = diff === null ? null : Math.abs(diff);
+      const pill  = diff === null
         ? `<span class="pill pill-blank">NO COUNT</span>`
-        : isUnder ? `<span class="pill pill-under">SHORT ${fmt(Math.abs(diff))}</span>`
-        : isOver  ? `<span class="pill pill-over">OVER +${fmt(diff)}</span>`
+        : isUnder ? `<span class="pill pill-under">SHORT ${absEa}ea</span>`
+        : isOver  ? `<span class="pill pill-over">OVER +${absEa}ea</span>`
         :           `<span class="pill pill-exact">EXACT</span>`;
 
       tr.innerHTML = `
-        <td class="sku-name"><input value="${esc(sku.name)}" onchange="upd(${sku.id},'name',this.value)" /></td>
+        <td class="sku-name" data-name="${esc(sku.name)}"><input value="${esc(sku.name)}" onchange="upd(${sku.id},'name',this.value)" /></td>
         <td><input class="num-input" type="number" min="1" step="1" value="${sku.upc}" onchange="upd(${sku.id},'upc',+this.value||1)" /></td>
         <td><input class="num-input" type="number" min="0" step="0.0001" value="${sku.sysCases}" onchange="upd(${sku.id},'sysCases',parseFloat(this.value)||0)" /></td>
         <td class="calc">${fmt(sysEa)}</td>
@@ -235,7 +325,7 @@
         <td class="calc ${diffClass}">${diffCasesStr}</td>
         <td class="calc ${diffClass}">${diffStr}</td>
         <td>${pill}</td>
-        <td><button class="del-btn" onclick="del(${sku.id})">×</button></td>
+        <td class="no-print"><button class="del-btn" onclick="del(${sku.id})">×</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -259,18 +349,23 @@
   function updateStats() {
     const counted = skus.filter(s => s.cntCases !== null || s.cntEaches !== null);
     const cntEaOf = s => round2((s.cntCases||0) * s.upc + (s.cntEaches||0));
-    const over    = counted.filter(s => round2(cntEaOf(s) - s.sysCases * s.upc) > 0).length;
-    const under   = counted.filter(s => round2(cntEaOf(s) - s.sysCases * s.upc) < 0).length;
-    const net     = counted.reduce((sum, s) => sum + round2(cntEaOf(s) - s.sysCases * s.upc), 0);
+    const diffOf  = s => {
+      const raw = round2(cntEaOf(s) - s.sysCases * s.upc);
+      return raw < 0 ? -Math.ceil(Math.abs(raw)) : Math.ceil(raw);
+    };
+    const over    = counted.filter(s => diffOf(s) > 0).length;
+    const under   = counted.filter(s => diffOf(s) < 0).length;
+    const net     = counted.reduce((sum, s) => sum + diffOf(s), 0);
 
-    document.getElementById('stat-skus').textContent  = skus.length;
-    document.getElementById('stat-over').textContent  = over;
-    document.getElementById('stat-under').textContent = under;
+    document.getElementById('stat-skus').textContent     = skus.length;
+    document.getElementById('stat-counted').textContent  = counted.length;
+    document.getElementById('stat-over').textContent     = over;
+    document.getElementById('stat-under').textContent    = under;
 
     const netEl = document.getElementById('stat-net');
     if (!counted.length) { netEl.textContent = '—'; netEl.className = 'stat-value'; }
     else {
-      netEl.textContent = (net >= 0 ? '+' : '') + fmt(net);
+      netEl.textContent = (net >= 0 ? '+' : '') + net + 'ea';
       netEl.className   = 'stat-value ' + (net > 0 ? 'good' : net < 0 ? 'bad' : '');
     }
   }
@@ -292,6 +387,12 @@
   function clearAll() {
     if (!skus.length) return;
     if (confirm('Remove all SKUs?')) { skus = []; save(); renderTable(); }
+  }
+
+  function printSheet() {
+    const now = new Date().toLocaleString();
+    document.body.setAttribute('data-printed', now);
+    window.print();
   }
 
   let nextId = Date.now();
@@ -321,13 +422,14 @@
   document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
 
   function exportCSV() {
-    const rows = [['Product/SKU','Units Per Case','System Cases','System (ea)','Count Cases','Count Eaches','Count Total (ea)','Diff (cases)','Diff (ea)','Status']];
+    const rows = [['Product/SKU','Units Per Case','System Cases','System (ea)','Count Cases','Count Eaches','Count Total (ea)','Diff (cases)','Diff (ea, ceiled)','Status']];
     skus.forEach(k => {
       const sysEa     = round2(k.sysCases * k.upc);
       const has       = k.cntCases !== null || k.cntEaches !== null;
       const cntEa     = has ? round2((k.cntCases||0) * k.upc + (k.cntEaches||0)) : '';
       const diffCases = has ? round4(cntEa / k.upc - k.sysCases) : '';
-      const diff      = has ? round2(cntEa - sysEa) : '';
+      const diffRaw   = has ? round2(cntEa - sysEa) : '';
+      const diff      = has ? (diffRaw < 0 ? -Math.ceil(Math.abs(diffRaw)) : Math.ceil(diffRaw)) : '';
       const status    = !has ? 'No Count' : diff > 0 ? 'Over' : diff < 0 ? 'Short' : 'Exact';
       rows.push([k.name, k.upc, k.sysCases, sysEa, k.cntCases ?? '', k.cntEaches ?? '', cntEa, diffCases, diff, status]);
     });
