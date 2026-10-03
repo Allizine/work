@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory Count</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --border: #2a2d35;
+    --accent: #c8f135;
+    --accent-dim: rgba(200,241,53,0.10);
+    --red: #ff4d4d;
+    --red-dim: rgba(255,77,77,0.10);
+    --yellow: #ffc84a;
+    --yellow-dim: rgba(255,200,74,0.12);
+    --text: #e8eaf0;
+    --muted: #6b7080;
+    --mono: 'DM Mono', monospace;
+    --display: 'Syne', sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; padding: 32px 16px 64px; }
+
+  header { max-width: 980px; margin: 0 auto 32px; }
+  header h1 { font-family: var(--display); font-size: clamp(26px,5vw,46px); font-weight: 800; letter-spacing: -1px; line-height: 1; margin-bottom: 6px; }
+  header h1 span { color: var(--accent); }
+  header p { font-size: 12px; color: var(--muted); }
+
+  .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; max-width: 980px; margin: 0 auto 22px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 18px; flex: 1; min-width: 115px; }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
+  .stat-value { font-size: 21px; font-weight: 500; }
+  .stat-value.bad  { color: var(--red); }
+  .stat-value.good { color: var(--accent); }
+
+  .toolbar { max-width: 980px; margin: 0 auto 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .btn { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.5px; padding: 9px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); color: #0e0f11; border-color: var(--accent); font-weight: 700; }
+  .btn-primary:hover { background: #d6f54a; color: #0e0f11; }
+
+  .search { flex: 1; min-width: 180px; font-family: var(--mono); font-size: 13px; padding: 9px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .search:focus { border-color: var(--accent); }
+  .search::placeholder { color: var(--muted); }
+
+  .table-wrap { max-width: 980px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; min-width: 780px; }
+  thead { background: #1c1f26; border-bottom: 1px solid var(--border); }
+  th { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 12px 14px; text-align: left; white-space: nowrap; }
+  th .sub { display: block; font-size: 9px; color: #3a3f4a; letter-spacing: 0.5px; text-transform: none; margin-top: 2px; }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.018); }
+
+  td { padding: 9px 14px; vertical-align: middle; }
+
+  .sku-name { min-width: 150px; }
+  .sku-name input { font-family: var(--mono); font-size: 13px; font-weight: 500; background: transparent; border: none; color: var(--text); outline: none; width: 100%; min-width: 130px; }
+  .sku-name input:focus { background: rgba(255,255,255,0.04); border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+
+  .num-input { font-family: var(--mono); font-size: 13px; width: 86px; padding: 5px 8px; background: rgba(255,255,255,0.04); border: 1px solid transparent; border-radius: 5px; color: var(--text); text-align: center; outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
+  .num-input::-webkit-outer-spin-button, .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .num-input:focus { border-color: var(--accent); }
+
+  /* counted cases input — green tint */
+  .count-input { background: rgba(200,241,53,0.06) !important; border-color: rgba(200,241,53,0.2) !important; }
+  .count-input:focus { border-color: var(--accent) !important; }
+
+  .calc { font-size: 13px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+
+  .divider-col { border-left: 1px solid var(--border); }
+
+  .diff-pos  { color: var(--accent) !important; }
+  .diff-neg  { color: var(--red)    !important; }
+  .diff-zero { color: var(--muted)  !important; }
+
+  .pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; letter-spacing: 0.5px; white-space: nowrap; }
+  .pill-over  { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(200,241,53,0.25); }
+  .pill-under { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(255,77,77,0.25); }
+  .pill-exact { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(255,200,74,0.25); }
+  .pill-blank { background: rgba(107,112,128,0.1); color: var(--muted); border: 1px solid var(--border); }
+
+  .row-under { background: var(--red-dim)    !important; }
+  .row-over  { background: var(--accent-dim) !important; }
+
+  .del-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 4px 6px; border-radius: 4px; transition: all 0.15s; }
+  .del-btn:hover { color: var(--red); background: var(--red-dim); }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 13px; }
+  .empty-state .big { font-size: 36px; margin-bottom: 8px; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; width: 100%; max-width: 340px; }
+  .modal h2 { font-family: var(--display); font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; }
+  .field input { width: 100%; font-family: var(--mono); font-size: 13px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .field input:focus { border-color: var(--accent); }
+  .modal-hint { font-size: 11px; color: var(--muted); margin-top: -10px; margin-bottom: 16px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .modal-actions .btn { flex: 1; text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>STOCK<span>COUNT</span></h1>
+  <p>System qty (decimal cases) vs your count (cases + loose eaches) — gap shown in cases &amp; eaches</p>
+</header>
+
+<div class="summary-bar">
+  <div class="stat"><div class="stat-label">SKUs</div><div class="stat-value" id="stat-skus">0</div></div>
+  <div class="stat"><div class="stat-label">SKUs Over</div><div class="stat-value good" id="stat-over">0</div></div>
+  <div class="stat"><div class="stat-label">SKUs Under</div><div class="stat-value bad" id="stat-under">0</div></div>
+  <div class="stat"><div class="stat-label">Net Variance (ea)</div><div class="stat-value" id="stat-net">—</div></div>
+</div>
+
+<div class="toolbar">
+  <input class="search" type="text" placeholder="Search SKUs…" id="search-input" oninput="renderTable()">
+  <button class="btn" onclick="openModal()">+ Add SKU</button>
+  <button class="btn" onclick="clearCounts()">Clear Counts</button>
+  <button class="btn" onclick="clearAll()">Clear All</button>
+  <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Product / SKU</th>
+        <th>Units/Case</th>
+        <th>System Cases<span class="sub">from your system</span></th>
+        <th>System (ea)<span class="sub">auto-calc</span></th>
+        <th class="divider-col">Count Cases<span class="sub">full cases</span></th>
+        <th>Count Eaches<span class="sub">loose eaches</span></th>
+        <th>Count Total (ea)<span class="sub">auto-calc</span></th>
+        <th>Diff (cases)<span class="sub">count − system</span></th>
+        <th>Diff (ea)<span class="sub">count − system</span></th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="inv-body"></tbody>
+  </table>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Add SKU</h2>
+    <div class="field">
+      <label>Product Name / SKU</label>
+      <input type="text" id="m-name" placeholder="e.g. Coca-Cola 12pk" />
+    </div>
+    <div class="field">
+      <label>Units Per Case</label>
+      <input type="number" id="m-upc" placeholder="e.g. 12" min="1" step="1" />
+    </div>
+    <p class="modal-hint">Editable any time in the table.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addSKU()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let skus = JSON.parse(localStorage.getItem('sc3_skus') || '[]');
+  function save() { localStorage.setItem('sc3_skus', JSON.stringify(skus)); }
+
+  function renderTable() {
+    const q     = document.getElementById('search-input').value.toLowerCase();
+    const tbody = document.getElementById('inv-body');
+    tbody.innerHTML = '';
+    const visible = skus.filter(s => s.name.toLowerCase().includes(q));
+
+    if (!visible.length) {
+      tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state">
+        <div class="big">📦</div>
+        ${skus.length === 0 ? 'No SKUs yet — click <strong>+ Add SKU</strong> to get started.' : 'No results.'}
+      </div></td></tr>`;
+      updateStats(); return;
+    }
+
+    visible.forEach(sku => {
+      const sysEa     = round2(sku.sysCases * sku.upc);
+      const hasCases  = sku.cntCases  !== null && sku.cntCases  !== undefined;
+      const hasEaches = sku.cntEaches !== null && sku.cntEaches !== undefined;
+      const has       = hasCases || hasEaches;
+      const cntCasesVal  = hasCases  ? sku.cntCases  : 0;
+      const cntEachesVal = hasEaches ? sku.cntEaches : 0;
+      const cntEa    = has ? round2(cntCasesVal * sku.upc + cntEachesVal) : null;
+      const cntCasesDecimal = has ? round4(cntEa / sku.upc) : null;
+      const diffCases = has ? round4(cntCasesDecimal - sku.sysCases) : null;
+      const diff      = has ? round2(cntEa - sysEa) : null;
+
+      const isUnder = diff !== null && diff < 0;
+      const isOver  = diff !== null && diff > 0;
+
+      const tr = document.createElement('tr');
+      if (isUnder) tr.classList.add('row-under');
+      else if (isOver) tr.classList.add('row-over');
+
+      const diffCasesStr = diffCases === null ? '—' : (diffCases > 0 ? '+' : '') + fmt4(diffCases);
+      const diffStr      = diff === null ? '—' : (diff > 0 ? '+' : '') + fmt(diff);
+      const diffClass    = diff === null ? 'diff-zero' : diff > 0 ? 'diff-pos' : diff < 0 ? 'diff-neg' : 'diff-zero';
+
+      const pill = diff === null
+        ? `<span class="pill pill-blank">NO COUNT</span>`
+        : isUnder ? `<span class="pill pill-under">SHORT ${fmt(Math.abs(diff))}</span>`
+        : isOver  ? `<span class="pill pill-over">OVER +${fmt(diff)}</span>`
+        :           `<span class="pill pill-exact">EXACT</span>`;
+
+      tr.innerHTML = `
+        <td class="sku-name"><input value="${esc(sku.name)}" onchange="upd(${sku.id},'name',this.value)" /></td>
+        <td><input class="num-input" type="number" min="1" step="1" value="${sku.upc}" onchange="upd(${sku.id},'upc',+this.value||1)" /></td>
+        <td><input class="num-input" type="number" min="0" step="0.0001" value="${sku.sysCases}" onchange="upd(${sku.id},'sysCases',parseFloat(this.value)||0)" /></td>
+        <td class="calc">${fmt(sysEa)}</td>
+        <td class="divider-col"><input class="num-input count-input" type="number" min="0" step="1"
+              value="${hasCases ? sku.cntCases : ''}" placeholder="—"
+              onchange="upd(${sku.id},'cntCases', this.value==='' ? null : parseFloat(this.value))" /></td>
+        <td><input class="num-input count-input" type="number" min="0" step="1"
+              value="${hasEaches ? sku.cntEaches : ''}" placeholder="—"
+              onchange="upd(${sku.id},'cntEaches', this.value==='' ? null : parseFloat(this.value))" /></td>
+        <td class="calc">${cntEa !== null ? fmt(cntEa) : '—'}</td>
+        <td class="calc ${diffClass}">${diffCasesStr}</td>
+        <td class="calc ${diffClass}">${diffStr}</td>
+        <td>${pill}</td>
+        <td><button class="del-btn" onclick="del(${sku.id})">×</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    updateStats();
+  }
+
+  function round4(n) { return parseFloat(n.toFixed(4)); }
+  function round2(n) { return parseFloat(n.toFixed(2)); }
+
+  function fmt(n) {
+    if (n === null || n === undefined) return '—';
+    return parseFloat(n.toFixed(2)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
+
+  function fmt4(n) {
+    if (n === null || n === undefined) return '—';
+    return parseFloat(n.toFixed(4)).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 4 });
+  }
+
+  function updateStats() {
+    const counted = skus.filter(s => s.cntCases !== null || s.cntEaches !== null);
+    const cntEaOf = s => round2((s.cntCases||0) * s.upc + (s.cntEaches||0));
+    const over    = counted.filter(s => round2(cntEaOf(s) - s.sysCases * s.upc) > 0).length;
+    const under   = counted.filter(s => round2(cntEaOf(s) - s.sysCases * s.upc) < 0).length;
+    const net     = counted.reduce((sum, s) => sum + round2(cntEaOf(s) - s.sysCases * s.upc), 0);
+
+    document.getElementById('stat-skus').textContent  = skus.length;
+    document.getElementById('stat-over').textContent  = over;
+    document.getElementById('stat-under').textContent = under;
+
+    const netEl = document.getElementById('stat-net');
+    if (!counted.length) { netEl.textContent = '—'; netEl.className = 'stat-value'; }
+    else {
+      netEl.textContent = (net >= 0 ? '+' : '') + fmt(net);
+      netEl.className   = 'stat-value ' + (net > 0 ? 'good' : net < 0 ? 'bad' : '');
+    }
+  }
+
+  function upd(id, field, value) {
+    const s = skus.find(x => x.id === id);
+    if (!s) return;
+    s[field] = value;
+    save(); renderTable();
+  }
+
+  function del(id) { skus = skus.filter(s => s.id !== id); save(); renderTable(); }
+
+  function clearCounts() {
+    skus.forEach(s => { s.cntCases = null; s.cntEaches = null; });
+    save(); renderTable();
+  }
+
+  function clearAll() {
+    if (!skus.length) return;
+    if (confirm('Remove all SKUs?')) { skus = []; save(); renderTable(); }
+  }
+
+  let nextId = Date.now();
+
+  function openModal() {
+    document.getElementById('m-name').value = '';
+    document.getElementById('m-upc').value  = '';
+    document.getElementById('modal').classList.add('open');
+    setTimeout(() => document.getElementById('m-name').focus(), 50);
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+  function addSKU() {
+    const name = document.getElementById('m-name').value.trim();
+    const upc  = parseInt(document.getElementById('m-upc').value) || 0;
+    if (!name) { document.getElementById('m-name').focus(); return; }
+    if (!upc)  { document.getElementById('m-upc').focus();  return; }
+    skus.push({ id: nextId++, name, upc, sysCases: 0, cntCases: null, cntEaches: null });
+    save(); closeModal(); renderTable();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('modal').classList.contains('open')) addSKU();
+    if (e.key === 'Escape') closeModal();
+  });
+  document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+  function exportCSV() {
+    const rows = [['Product/SKU','Units Per Case','System Cases','System (ea)','Count Cases','Count Eaches','Count Total (ea)','Diff (cases)','Diff (ea)','Status']];
+    skus.forEach(k => {
+      const sysEa     = round2(k.sysCases * k.upc);
+      const has       = k.cntCases !== null || k.cntEaches !== null;
+      const cntEa     = has ? round2((k.cntCases||0) * k.upc + (k.cntEaches||0)) : '';
+      const diffCases = has ? round4(cntEa / k.upc - k.sysCases) : '';
+      const diff      = has ? round2(cntEa - sysEa) : '';
+      const status    = !has ? 'No Count' : diff > 0 ? 'Over' : diff < 0 ? 'Short' : 'Exact';
+      rows.push([k.name, k.upc, k.sysCases, sysEa, k.cntCases ?? '', k.cntEaches ?? '', cntEa, diffCases, diff, status]);
+    });
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv,' + encodeURIComponent(csv);
+    a.download = `stockcount_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  }
+
+  function esc(s) { return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+  renderTable();
+</script>
+</body>
+</html>
