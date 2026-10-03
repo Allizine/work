@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weight Count</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:         #07080C;
+    --surface:    #0F121B;
+    --border:     #252A35;
+    --accent:     #C8FD0E;
+    --accent-dim: rgba(200,253,14,0.10);
+    --cyan:       #66E6FF;
+    --red:        #ff4d4d;
+    --red-dim:    rgba(255,77,77,0.10);
+    --yellow:     #ffc84a;
+    --yellow-dim: rgba(255,200,74,0.12);
+    --text:       #F8F8F6;
+    --muted:      #A5ABBA;
+    --mono:       'DM Mono', monospace;
+    --body:       'Manrope', sans-serif;
+    --display:    'Syne', sans-serif;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: var(--body); min-height: 100vh; padding: 32px 16px 64px; }
+
+  header { max-width: 860px; margin: 0 auto 32px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .header-left h1 { font-family: var(--display); font-size: clamp(28px,5vw,50px); font-weight: 800; letter-spacing: -1.5px; line-height: 1; margin-bottom: 6px; }
+  .header-left h1 span { color: var(--accent); }
+  .header-left p { font-size: 13px; color: var(--muted); }
+  .nav-link { font-family: var(--mono); font-size: 11px; color: var(--muted); text-decoration: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; transition: all 0.15s; white-space: nowrap; }
+  .nav-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  .summary-bar { display: flex; gap: 12px; flex-wrap: wrap; max-width: 860px; margin: 0 auto 22px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 20px; flex: 1; min-width: 120px; }
+  .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; font-family: var(--mono); }
+  .stat-value { font-size: 22px; font-weight: 700; font-family: var(--mono); }
+  .stat-value.bad  { color: var(--red); }
+  .stat-value.good { color: var(--accent); }
+
+  .toolbar { max-width: 860px; margin: 0 auto 16px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  .btn { font-family: var(--body); font-size: 13px; font-weight: 600; padding: 9px 16px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); color: #07080C; border-color: var(--accent); font-weight: 700; }
+  .btn-primary:hover { background: #d4ff1a; color: #07080C; border-color: #d4ff1a; }
+  .btn-print { border-color: var(--cyan); color: var(--cyan); }
+  .btn-print:hover { background: rgba(102,230,255,0.08); }
+
+  .search { flex: 1; min-width: 180px; font-family: var(--body); font-size: 13px; padding: 9px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .search:focus { border-color: var(--accent); }
+  .search::placeholder { color: var(--muted); }
+
+  .table-wrap { max-width: 860px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; min-width: 540px; }
+  thead { background: #0c0f17; border-bottom: 1px solid var(--border); }
+  th { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); padding: 12px 16px; text-align: left; white-space: nowrap; font-family: var(--mono); }
+  th .sub { display: block; font-size: 9px; color: #3a3f4a; letter-spacing: 0.5px; text-transform: none; margin-top: 2px; }
+
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.018); }
+  td { padding: 10px 16px; vertical-align: middle; }
+
+  .sku-name { min-width: 180px; }
+  .sku-name input { font-family: var(--body); font-size: 13px; font-weight: 500; background: transparent; border: none; color: var(--text); outline: none; width: 100%; min-width: 160px; }
+  .sku-name input:focus { background: rgba(255,255,255,0.04); border-radius: 4px; padding: 2px 4px; margin: -2px -4px; }
+
+  .num-input { font-family: var(--mono); font-size: 13px; width: 100px; padding: 6px 10px; background: rgba(255,255,255,0.04); border: 1px solid transparent; border-radius: 5px; color: var(--text); text-align: center; outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
+  .num-input::-webkit-outer-spin-button, .num-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .num-input:focus { border-color: var(--accent); }
+
+  .count-input { background: rgba(200,253,14,0.06) !important; border-color: rgba(200,253,14,0.2) !important; }
+  .count-input:focus { border-color: var(--accent) !important; }
+
+  .calc { font-size: 13px; font-weight: 600; white-space: nowrap; font-family: var(--mono); }
+  .unit { font-size: 11px; color: var(--muted); margin-left: 2px; font-family: var(--mono); }
+
+  .diff-pos  { color: var(--accent) !important; }
+  .diff-neg  { color: var(--red)    !important; }
+  .diff-zero { color: var(--muted)  !important; }
+
+  .pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; font-family: var(--mono); }
+  .pill-over  { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(200,253,14,0.25); }
+  .pill-under { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(255,77,77,0.25); }
+  .pill-exact { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(255,200,74,0.25); }
+  .pill-blank { background: rgba(165,171,186,0.08); color: var(--muted); border: 1px solid var(--border); }
+
+  .row-under { background: var(--red-dim)    !important; }
+  .row-over  { background: var(--accent-dim) !important; }
+
+  .del-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; line-height: 1; padding: 4px 6px; border-radius: 4px; transition: all 0.15s; }
+  .del-btn:hover { color: var(--red); background: var(--red-dim); }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 13px; }
+  .empty-state .big { font-size: 36px; margin-bottom: 8px; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; width: 100%; max-width: 320px; }
+  .modal h2 { font-family: var(--display); font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 6px; font-family: var(--mono); }
+  .field input { width: 100%; font-family: var(--body); font-size: 13px; padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .field input:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .modal-actions .btn { flex: 1; text-align: center; }
+
+  /* ── Print ─────────────────────────────────────────── */
+  @media print {
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body { background: #fff !important; color: #07080C !important; padding: 16px !important; }
+
+    .toolbar, .modal-overlay, .del-btn, .nav-link,
+    .btn, .num-input, .sku-name input { display: none !important; }
+
+    .sku-name::before { content: attr(data-name); font-weight: 500; font-size: 12px; color: #07080C; }
+
+    .header-left h1 { font-size: 28px !important; color: #07080C !important; }
+    .header-left h1 span { color: #07080C !important; }
+    .header-left p { color: #555 !important; font-size: 11px; }
+    header { margin-bottom: 14px; }
+
+    .summary-bar { margin-bottom: 12px !important; }
+    .stat { background: #f4f4f2 !important; border: 1px solid #ccc !important; padding: 10px 14px !important; }
+    .stat-label { color: #555 !important; }
+    .stat-value { color: #07080C !important; font-size: 18px !important; }
+    .stat-value.bad  { color: #c0392b !important; }
+    .stat-value.good { color: #27ae60 !important; }
+
+    .table-wrap { background: #fff !important; border: 1px solid #ccc !important; overflow: visible !important; }
+    table { min-width: unset !important; }
+    thead { background: #f4f4f2 !important; border-bottom: 1px solid #ccc !important; }
+    th { color: #555 !important; font-size: 9px !important; padding: 8px 12px !important; }
+    th .sub { color: #aaa !important; }
+    td { padding: 8px 12px !important; border-bottom: 1px solid #e8e8e6 !important; }
+    tbody tr { border-bottom: 1px solid #e8e8e6 !important; }
+    tbody tr:last-child { border-bottom: none !important; }
+
+    .calc { font-size: 12px !important; }
+    .unit { color: #888 !important; }
+    .diff-pos { color: #27ae60 !important; }
+    .diff-neg { color: #c0392b !important; }
+    .diff-zero { color: #888 !important; }
+    .row-under { background: rgba(192,57,43,0.06) !important; }
+    .row-over  { background: rgba(39,174,96,0.06) !important; }
+
+    .pill { font-size: 9px !important; padding: 1px 6px !important; }
+    .pill-over  { background: rgba(39,174,96,0.1)  !important; color: #27ae60 !important; border-color: rgba(39,174,96,0.3) !important; }
+    .pill-under { background: rgba(192,57,43,0.1)  !important; color: #c0392b !important; border-color: rgba(192,57,43,0.3) !important; }
+    .pill-exact { background: rgba(243,156,18,0.1) !important; color: #b7770d !important; border-color: rgba(243,156,18,0.3) !important; }
+    .pill-blank { background: #f0f0ee !important; color: #888 !important; border-color: #ccc !important; }
+
+    body::after { content: "Printed " attr(data-printed); display: block; margin-top: 16px; font-size: 10px; color: #aaa; text-align: right; font-family: 'DM Mono', monospace; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>WEIGHT<span>COUNT</span></h1>
+    <p>Morning count (lbs) vs system on-hand weight — gap in lbs</p>
+  </div>
+  <a class="nav-link" href="index.html">← Case Count</a>
+</header>
+
+<div class="summary-bar">
+  <div class="stat"><div class="stat-label">Items</div><div class="stat-value" id="stat-items">0</div></div>
+  <div class="stat"><div class="stat-label">Counted</div><div class="stat-value" id="stat-counted">0</div></div>
+  <div class="stat"><div class="stat-label">Over</div><div class="stat-value good" id="stat-over">0</div></div>
+  <div class="stat"><div class="stat-label">Under</div><div class="stat-value bad" id="stat-under">0</div></div>
+  <div class="stat"><div class="stat-label">Net Variance (lbs)</div><div class="stat-value" id="stat-net">—</div></div>
+</div>
+
+<div class="toolbar">
+  <input class="search" type="text" placeholder="Search items…" id="search-input" oninput="renderTable()">
+  <button class="btn" onclick="openModal()">+ Add Item</button>
+  <button class="btn" onclick="clearCounts()">Clear Counts</button>
+  <button class="btn" onclick="clearAll()">Clear All</button>
+  <button class="btn btn-print" onclick="printSheet()">🖨 Print</button>
+  <button class="btn btn-primary" onclick="exportCSV()">Export CSV</button>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>On-Hand (lbs)<span class="sub">from system</span></th>
+        <th>Count (lbs)<span class="sub">morning count</span></th>
+        <th>Diff (lbs)<span class="sub">count − on-hand</span></th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="inv-body"></tbody>
+  </table>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Add Item</h2>
+    <div class="field">
+      <label>Product Name</label>
+      <input type="text" id="m-name" placeholder="e.g. Ground Beef 80/20" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addItem()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let items = JSON.parse(localStorage.getItem('wc1_items') || '[]');
+  function save() { localStorage.setItem('wc1_items', JSON.stringify(items)); }
+
+  function renderTable() {
+    const q     = document.getElementById('search-input').value.toLowerCase();
+    const tbody = document.getElementById('inv-body');
+    tbody.innerHTML = '';
+    const visible = items.filter(i => i.name.toLowerCase().includes(q));
+
+    if (!visible.length) {
+      tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+        <div class="big">⚖️</div>
+        ${items.length === 0 ? 'No items yet — click <strong>+ Add Item</strong> to get started.' : 'No results.'}
+      </div></td></tr>`;
+      updateStats(); return;
+    }
+
+    visible.forEach(item => {
+      const hasOnHand = item.onHand !== null && item.onHand !== undefined;
+      const hasCount  = item.count  !== null && item.count  !== undefined;
+      const has = hasOnHand && hasCount;
+      const diffRaw = has ? round2(item.count - item.onHand) : null;
+      const diff    = diffRaw === null ? null
+                    : diffRaw < 0 ? -Math.ceil(Math.abs(diffRaw) * 10) / 10
+                    : Math.ceil(diffRaw * 10) / 10;
+
+      const isUnder = diff !== null && diff < 0;
+      const isOver  = diff !== null && diff > 0;
+
+      const tr = document.createElement('tr');
+      if (isUnder) tr.classList.add('row-under');
+      else if (isOver) tr.classList.add('row-over');
+
+      const diffStr   = diff === null ? '—' : (diff > 0 ? '+' : '') + diff + ' lbs';
+      const diffClass = diff === null ? 'diff-zero' : diff > 0 ? 'diff-pos' : diff < 0 ? 'diff-neg' : 'diff-zero';
+      const absLbs    = diff === null ? null : Math.abs(diff);
+
+      const pill = diff === null
+        ? `<span class="pill pill-blank">NO COUNT</span>`
+        : isUnder ? `<span class="pill pill-under">SHORT ${absLbs}lbs</span>`
+        : isOver  ? `<span class="pill pill-over">OVER +${absLbs}lbs</span>`
+        :           `<span class="pill pill-exact">EXACT</span>`;
+
+      tr.innerHTML = `
+        <td class="sku-name" data-name="${esc(item.name)}">
+          <input value="${esc(item.name)}" onchange="upd(${item.id},'name',this.value)" />
+        </td>
+        <td>
+          <input class="num-input" type="number" min="0" step="0.1"
+            value="${hasOnHand ? item.onHand : ''}" placeholder="—"
+            onchange="upd(${item.id},'onHand', this.value==='' ? null : parseFloat(this.value))" />
+        </td>
+        <td>
+          <input class="num-input count-input" type="number" min="0" step="0.1"
+            value="${hasCount ? item.count : ''}" placeholder="—"
+            onchange="upd(${item.id},'count', this.value==='' ? null : parseFloat(this.value))" />
+        </td>
+        <td class="calc ${diffClass}">${diffStr}</td>
+        <td>${pill}</td>
+        <td><button class="del-btn" onclick="del(${item.id})">×</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    updateStats();
+  }
+
+  function round2(n) { return parseFloat(n.toFixed(2)); }
+
+  function updateStats() {
+    const counted = items.filter(i => i.onHand !== null && i.count !== null);
+    const diffOf  = i => {
+      const r = round2(i.count - i.onHand);
+      return r < 0 ? -Math.ceil(Math.abs(r) * 10) / 10 : Math.ceil(r * 10) / 10;
+    };
+    const over  = counted.filter(i => diffOf(i) > 0).length;
+    const under = counted.filter(i => diffOf(i) < 0).length;
+    const net   = round2(counted.reduce((s, i) => s + diffOf(i), 0));
+
+    document.getElementById('stat-items').textContent   = items.length;
+    document.getElementById('stat-counted').textContent = counted.length;
+    document.getElementById('stat-over').textContent    = over;
+    document.getElementById('stat-under').textContent   = under;
+
+    const netEl = document.getElementById('stat-net');
+    if (!counted.length) { netEl.textContent = '—'; netEl.className = 'stat-value'; }
+    else {
+      netEl.textContent = (net >= 0 ? '+' : '') + net + ' lbs';
+      netEl.className   = 'stat-value ' + (net > 0 ? 'good' : net < 0 ? 'bad' : '');
+    }
+  }
+
+  function upd(id, field, value) {
+    const i = items.find(x => x.id === id);
+    if (!i) return;
+    i[field] = value;
+    save(); renderTable();
+  }
+
+  function del(id) { items = items.filter(i => i.id !== id); save(); renderTable(); }
+
+  function clearCounts() {
+    items.forEach(i => { i.count = null; });
+    save(); renderTable();
+  }
+
+  function clearAll() {
+    if (!items.length) return;
+    if (confirm('Remove all items?')) { items = []; save(); renderTable(); }
+  }
+
+  function printSheet() {
+    document.body.setAttribute('data-printed', new Date().toLocaleString());
+    window.print();
+  }
+
+  let nextId = Date.now();
+
+  function openModal() {
+    document.getElementById('m-name').value = '';
+    document.getElementById('modal').classList.add('open');
+    setTimeout(() => document.getElementById('m-name').focus(), 50);
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+  function addItem() {
+    const name = document.getElementById('m-name').value.trim();
+    if (!name) { document.getElementById('m-name').focus(); return; }
+    items.push({ id: nextId++, name, onHand: null, count: null });
+    save(); closeModal(); renderTable();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && document.getElementById('modal').classList.contains('open')) addItem();
+    if (e.key === 'Escape') closeModal();
+  });
+  document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+  function exportCSV() {
+    const rows = [['Product','On-Hand (lbs)','Count (lbs)','Diff (lbs)','Status']];
+    items.forEach(i => {
+      const has  = i.onHand !== null && i.count !== null;
+      const dr   = has ? round2(i.count - i.onHand) : '';
+      const diff = has ? (dr < 0 ? -Math.ceil(Math.abs(dr) * 10) / 10 : Math.ceil(dr * 10) / 10) : '';
+      const status = !has ? 'No Count' : diff > 0 ? 'Over' : diff < 0 ? 'Short' : 'Exact';
+      rows.push([i.name, i.onHand ?? '', i.count ?? '', diff, status]);
+    });
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv,' + encodeURIComponent(csv);
+    a.download = `weightcount_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  }
+
+  function esc(s) { return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+  renderTable();
+</script>
+</body>
+</html>
