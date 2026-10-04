@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+  Copyright (c) 2026 Herorical. All rights reserved.
+  This source code is proprietary. Copying, modifying, or redistributing it
+  without prior written permission is prohibited. See LICENSE.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -308,6 +313,7 @@
 </dialog>
 
 <script>
+  /* Copyright (c) 2026 Herorical. All rights reserved. See LICENSE. */
   /* ── Storage (same keys as before, so saved counts carry over) ── */
   const store = {
     get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
