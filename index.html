@@ -235,7 +235,7 @@
         <th>Count Eaches<span class="sub">loose eaches</span></th>
         <th>Count Total (ea)<span class="sub">auto-calc</span></th>
         <th>Diff (cases)<span class="sub">count − system</span></th>
-        <th>Diff (ea)<span class="sub">rounded up</span></th>
+        <th>Diff (ea)<span class="sub">rounded</span></th>
         <th>Status</th>
         <th></th>
       </tr>
@@ -294,8 +294,8 @@
       const cntCasesDecimal = has ? round4(cntEa / sku.upc) : null;
       const diffCases    = has ? round4(cntCasesDecimal - sku.sysCases) : null;
       const diffRaw      = has ? round2(cntEa - sysEa) : null;
-      // Round up the absolute difference to whole eaches, preserve sign
-      const diff         = diffRaw === null ? null : (diffRaw < 0 ? -Math.ceil(Math.abs(diffRaw)) : Math.ceil(diffRaw));
+      // Round to nearest whole each, preserve sign
+      const diff         = diffRaw === null ? null : (diffRaw < 0 ? -Math.round(Math.abs(diffRaw)) : Math.round(diffRaw));
 
       const isUnder = diff !== null && diff < 0;
       const isOver  = diff !== null && diff > 0;
@@ -356,7 +356,7 @@
     const cntEaOf = s => round2((s.cntCases||0) * s.upc + (s.cntEaches||0));
     const diffOf  = s => {
       const raw = round2(cntEaOf(s) - s.sysCases * s.upc);
-      return raw < 0 ? -Math.ceil(Math.abs(raw)) : Math.ceil(raw);
+      return raw < 0 ? -Math.round(Math.abs(raw)) : Math.round(raw);
     };
     const over    = counted.filter(s => diffOf(s) > 0).length;
     const under   = counted.filter(s => diffOf(s) < 0).length;
@@ -434,7 +434,7 @@
       const cntEa     = has ? round2((k.cntCases||0) * k.upc + (k.cntEaches||0)) : '';
       const diffCases = has ? round4(cntEa / k.upc - k.sysCases) : '';
       const diffRaw   = has ? round2(cntEa - sysEa) : '';
-      const diff      = has ? (diffRaw < 0 ? -Math.ceil(Math.abs(diffRaw)) : Math.ceil(diffRaw)) : '';
+      const diff      = has ? (diffRaw < 0 ? -Math.round(Math.abs(diffRaw)) : Math.round(diffRaw)) : '';
       const status    = !has ? 'No Count' : diff > 0 ? 'Over' : diff < 0 ? 'Short' : 'Exact';
       rows.push([k.name, k.upc, k.sysCases, sysEa, k.cntCases ?? '', k.cntEaches ?? '', cntEa, diffCases, diff, status]);
     });
