@@ -201,6 +201,8 @@
     #print .p-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16pt; padding: 12mm 0 10pt; border-bottom: 2pt solid #07080C; }
     #print h1 { margin: 0; font: 800 20pt/1.15 var(--display); letter-spacing: 0; }
     #print .p-meta { margin: 3pt 0 0; color: #555; font-size: 9pt; }
+    #print .p-aisle { flex: 1; max-width: 80mm; display: flex; align-items: flex-end; gap: 6pt; padding-bottom: 2pt; font-size: 10pt; font-weight: 700; color: #333; }
+    #print .p-aisle i { flex: 1; height: 15pt; border-bottom: 1pt solid #07080C; }
     #print .p-net { text-align: right; }
     #print .p-net span { display: block; font-size: 8.5pt; color: #555; }
     #print .p-net strong { font: 800 24pt/1.1 var(--body); font-variant-numeric: tabular-nums; }
@@ -653,6 +655,7 @@
     $('#print').innerHTML = `
       <div class="p-top">
         <div><h1>${CFG[tab].title}</h1><p class="p-meta">Printed ${esc(when)}</p></div>
+        <div class="p-aisle"><span>Aisle</span><i></i></div>
         <div class="p-net"><span>Net variance</span><strong class="${netCls}">${net}</strong></div>
       </div>
       <div class="p-sum">
