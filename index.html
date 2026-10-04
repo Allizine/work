@@ -134,7 +134,7 @@
 
   .reset { display: flex; gap: 8px; flex-wrap: wrap; padding: 28px 0 8px; border-top: 1px solid var(--steel); }
 
-  footer { padding: 28px 0 40px; color: var(--fog); opacity: .6; font-size: 12px; }
+  footer { padding: 28px 0 40px; color: var(--fog); opacity: .6; font-size: 12px; text-align: center; }
 
   /* ── Toast ─────────────────────────────────── */
   #toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 14px; background: var(--white); color: var(--night); padding: 8px 8px 8px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.6); z-index: 20; max-width: calc(100vw - 32px); }
@@ -187,22 +187,44 @@
   /* ── Print ─────────────────────────────────── */
   #print { display: none; }
   @media print {
+    :root { color-scheme: light; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    html, body { background: #fff !important; }
+    html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
     body > *:not(#print) { display: none !important; }
-    #print { display: block; color: #07080C; font: 400 10.5pt/1.4 var(--body); }
-    #print h1 { font: 800 24pt/1 var(--display); letter-spacing: -0.02em; margin: 0 0 6pt; }
-    #print .p-meta { margin: 0 0 14pt; color: #444; font-size: 10pt; }
-    #print table { width: 100%; border-collapse: collapse; }
-    #print th { text-align: left; font: 600 8.5pt var(--body); color: #444; padding: 6pt 6pt; border-bottom: 1.5pt solid #07080C; }
-    #print td { padding: 6pt; border-bottom: 0.5pt solid #ccc; font: 400 9.5pt var(--mono); vertical-align: top; }
-    #print td.p-name { font: 600 10pt var(--body); }
+    #print { display: block; padding: 0 14mm; color: #0b0d12; font: 500 10pt/1.35 var(--body); }
+
+    #print .p-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16pt; padding: 12mm 0 10pt; border-bottom: 2pt solid #07080C; }
+    #print h1 { margin: 0; font: 800 20pt/1.15 var(--display); letter-spacing: 0; }
+    #print .p-meta { margin: 3pt 0 0; color: #555; font-size: 9pt; }
+    #print .p-net { text-align: right; }
+    #print .p-net span { display: block; font-size: 8.5pt; color: #555; }
+    #print .p-net strong { font: 800 24pt/1.1 var(--body); font-variant-numeric: tabular-nums; }
+    #print .short { color: #B3261E; }
+    #print .over  { color: #1E7A34; }
+    #print .even  { color: #8A5A00; }
+    #print .none  { color: #777; }
+
+    #print .p-sum { display: flex; gap: 22pt; padding: 9pt 0 0; font-size: 9.5pt; color: #444; }
+    #print .p-sum b { margin-right: 4pt; font: 800 12pt var(--body); color: #07080C; }
+
+    #print table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    #print thead { display: table-header-group; }
+    #print tfoot { display: table-footer-group; }
+    #print .sp td { height: 9mm; padding: 0; border: 0; background: none !important; }
+    #print th { padding: 5pt 8pt; text-align: left; vertical-align: bottom; font: 700 8pt/1.2 var(--body); color: #333; border-bottom: 1.25pt solid #07080C; }
+    #print td { padding: 6pt 8pt; vertical-align: middle; font: 600 10pt/1.25 var(--body); font-variant-numeric: tabular-nums; border-bottom: 0.5pt solid #d4d4d0; }
+    #print tbody tr:nth-child(even) td { background: #f5f5f2; }
     #print th.r, #print td.r { text-align: right; }
+    #print td.p-name { font-weight: 700; font-size: 10.5pt; overflow-wrap: anywhere; }
+    #print td.mute { color: #666; font-weight: 500; }
+    #print td.gap { font-weight: 800; }
     #print tr { break-inside: avoid; }
-    #print .short { color: #B3261E; font-weight: 500; }
-    #print .over  { color: #1E7A34; font-weight: 500; }
-    #print .none  { color: #888; }
-    #print .p-foot { margin-top: 18pt; font-size: 8.5pt; color: #777; }
+    #print .res { display: inline-block; padding: 1pt 8pt; border: 0.75pt solid currentColor; border-radius: 999px; font-size: 8.5pt; font-weight: 700; white-space: nowrap; }
+    #print .res.short { background: #fdecea; }
+    #print .res.over  { background: #e8f5ec; }
+    #print .res.even  { background: #fff4de; }
+    #print .res.none  { border-style: dashed; }
+    #print .p-foot { margin: 0; padding: 8pt 0 12mm; font-size: 8pt; color: #777; text-align: center; }
   }
 </style>
 </head>
@@ -593,33 +615,53 @@
 
   /* ── Print: a static sheet built from the data, so every value shows ── */
   function buildPrint() {
-    const s = stats();
+    const s = stats(), cases = tab === 'cases';
     const when = new Date().toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
-    const unit = tab === 'cases' ? 'ea' : 'lbs';
-    const netTxt = s.counted ? `Net ${signed(s.net, tab === 'cases' ? 0 : 2)} ${unit}.` : 'Nothing counted yet.';
-    let head, body;
-    if (tab === 'cases') {
-      head = '<th>Product</th><th class="r">Per case</th><th class="r">System cases</th><th class="r">System ea</th><th class="r">Counted</th><th class="r">Counted ea</th><th class="r">Gap cases</th><th class="r">Gap ea</th><th>Result</th>';
+    const unit = cases ? 'ea' : 'lbs';
+    const res = c => c.counted ? `<span class="res ${c.status}">${LABEL[c.status]}</span>` : '<span class="res none">Not counted</span>';
+    let widths, head, body;
+    if (cases) {
+      widths = [17, 7, 10, 9, 15, 9, 10, 8, 15];
+      head = '<th>Product</th><th class="r">Per case</th><th class="r">System cases</th><th class="r">System ea</th><th class="r">Counted (cs + ea)</th><th class="r">Counted ea</th><th class="r">Gap cases</th><th class="r">Gap ea</th><th>Result</th>';
       body = data.cases.map(it => {
         const c = calcCase(it);
-        const counted = (isNum(it.cntCases) || isNum(it.cntEaches)) ? `${num(it.cntCases || 0)} cs + ${num(it.cntEaches || 0)} ea` : '';
-        return `<tr><td class="p-name">${esc(it.name)}</td><td class="r">${num(it.upc)}</td><td class="r">${num(it.sysCases, 4)}</td><td class="r">${num(c.sysEa)}</td>
-          <td class="r">${counted}</td><td class="r">${c.counted ? num(c.cntEa) : ''}</td><td class="r ${c.status || 'none'}">${c.counted ? signed(c.diffCases, 4) : ''}</td>
-          <td class="r ${c.status || 'none'}">${c.counted ? signed(c.diffEa, 0) : ''}</td><td class="${c.status || 'none'}">${c.counted ? LABEL[c.status] : 'Not counted'}</td></tr>`;
+        const counted = (isNum(it.cntCases) || isNum(it.cntEaches)) ? `${num(it.cntCases || 0)} + ${num(it.cntEaches || 0)}` : '';
+        const g = c.status || 'none';
+        return `<tr><td class="p-name">${esc(it.name)}</td><td class="r mute">${num(it.upc)}</td><td class="r mute">${num(it.sysCases, 4)}</td><td class="r mute">${num(c.sysEa)}</td>
+          <td class="r">${counted}</td><td class="r">${c.counted ? num(c.cntEa) : ''}</td>
+          <td class="r ${g}">${c.counted ? signed(c.diffCases, 4) : ''}</td><td class="r gap ${g}">${c.counted ? signed(c.diffEa, 0) : ''}</td><td>${res(c)}</td></tr>`;
       }).join('');
     } else {
+      widths = [34, 18, 18, 14, 16];
       head = '<th>Item</th><th class="r">On hand (lbs)</th><th class="r">Counted (lbs)</th><th class="r">Gap (lbs)</th><th>Result</th>';
       body = data.weight.map(it => {
-        const c = calcWeight(it);
-        return `<tr><td class="p-name">${esc(it.name)}</td><td class="r">${isNum(it.onHand) ? num(it.onHand) : ''}</td><td class="r">${isNum(it.count) ? num(it.count) : ''}</td>
-          <td class="r ${c.status || 'none'}">${c.counted ? signed(c.diff, 2) : ''}</td><td class="${c.status || 'none'}">${c.counted ? LABEL[c.status] : 'Not counted'}</td></tr>`;
+        const c = calcWeight(it), g = c.status || 'none';
+        return `<tr><td class="p-name">${esc(it.name)}</td><td class="r mute">${isNum(it.onHand) ? num(it.onHand) : ''}</td><td class="r">${isNum(it.count) ? num(it.count) : ''}</td>
+          <td class="r gap ${g}">${c.counted ? signed(c.diff, 2) : ''}</td><td>${res(c)}</td></tr>`;
       }).join('');
     }
-    $('#print').innerHTML = `<h1>${CFG[tab].title}</h1>
-      <p class="p-meta">Printed ${esc(when)}. ${s.total} ${CFG[tab].noun}${s.total === 1 ? '' : 's'}, ${s.counted} counted, ${s.short} short, ${s.over} over. ${netTxt}</p>
-      <table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+    const span = widths.length;
+    const netCls = !s.counted ? 'none' : s.net < 0 ? 'short' : s.net > 0 ? 'over' : '';
+    const net = s.counted ? `${signed(s.net, cases ? 0 : 2)} ${unit}` : '\u2014';
+    const noun = CFG[tab].noun + 's';
+    $('#print').innerHTML = `
+      <div class="p-top">
+        <div><h1>${CFG[tab].title}</h1><p class="p-meta">Printed ${esc(when)}</p></div>
+        <div class="p-net"><span>Net variance</span><strong class="${netCls}">${net}</strong></div>
+      </div>
+      <div class="p-sum">
+        <span><b>${s.total}</b>${noun}</span><span><b>${s.counted}</b>counted</span>
+        <span><b class="short">${s.short}</b>short</span><span><b class="over">${s.over}</b>over</span><span><b>${s.even}</b>exact</span>
+      </div>
+      <table>
+        <colgroup>${widths.map(w => `<col style="width:${w}%">`).join('')}</colgroup>
+        <thead><tr class="sp"><td colspan="${span}"></td></tr><tr>${head}</tr></thead>
+        <tbody>${body}</tbody>
+        <tfoot><tr class="sp"><td colspan="${span}"></td></tr></tfoot>
+      </table>
       <p class="p-foot">&copy; 2026 Herorical. All rights reserved.</p>`;
-    $('#page-style').textContent = `@page { size: ${tab === 'cases' ? 'landscape' : 'portrait'}; margin: 12mm; }`;
+    // Zero page margin removes the browser's own date, title, URL and page-number lines.
+    $('#page-style').textContent = `@page { size: ${cases ? 'landscape' : 'portrait'}; margin: 0; }`;
   }
   window.addEventListener('beforeprint', buildPrint);
   $('#btn-print').addEventListener('click', () => { buildPrint(); window.print(); });
