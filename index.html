@@ -179,6 +179,9 @@
 
   @media (max-width: 560px) { .top { flex-wrap: wrap; } .top-actions { width: 100%; } .top-actions .btn { flex: 1; } }
 
+  /* Search + add stay pinned under the tabs while scrolling */
+  .bar { position: sticky; top: var(--tabs-h, 50px); z-index: 4; padding: 10px 0; background: rgba(7,8,12,0.96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
 
   /* ── Print ─────────────────────────────────── */
@@ -620,6 +623,12 @@
   }
   window.addEventListener('beforeprint', buildPrint);
   $('#btn-print').addEventListener('click', () => { buildPrint(); window.print(); });
+
+  /* Keep the pinned search bar directly under the pinned tabs */
+  const setTabsH = () => document.documentElement.style.setProperty('--tabs-h', $('.tabs-bar').offsetHeight + 'px');
+  setTabsH();
+  window.addEventListener('resize', setTabsH);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(setTabsH);
 
   renderTab();
 </script>
