@@ -316,7 +316,7 @@
     const hasOn = isNum(i.onHand), hasCnt = isNum(i.count);
     if (!hasOn || !hasCnt) return { counted: false, hasOn, hasCnt };
     const raw = r2(i.count - i.onHand);
-    const diff = (Math.sign(raw) * Math.round(Math.abs(raw) * 10) / 10) || 0;
+    const diff = raw || 0;
     return { counted: true, raw, diff, status: diff < 0 ? 'short' : diff > 0 ? 'over' : 'even' };
   }
 
@@ -369,8 +369,8 @@
     }
     return {
       cls: c.status,
-      html: `<div class="diff"><strong>${signed(c.diff, 1)}</strong><span class="unit">lbs</span><span class="pill ${c.status}">${LABEL[c.status]}</span></div>
-             <p class="detail">Counted ${num(+it.count)} of ${num(+it.onHand)} lbs. Exact gap ${signed(c.raw)} lbs.</p>`
+      html: `<div class="diff"><strong>${signed(c.diff, 2)}</strong><span class="unit">lbs</span><span class="pill ${c.status}">${LABEL[c.status]}</span></div>
+             <p class="detail">Counted ${num(+it.count)} of ${num(+it.onHand)} lbs.</p>`
     };
   }
 
@@ -402,7 +402,7 @@
     $('#s-short').textContent = s.short;
     const n = $('#s-net');
     if (!s.counted) { n.textContent = '\u2014'; n.className = 'stat-value none'; }
-    else { n.textContent = signed(s.net, cases ? 0 : 1) + (cases ? ' ea' : ' lbs'); n.className = 'stat-value ' + (s.net < 0 ? 'short' : s.net > 0 ? 'over' : ''); }
+    else { n.textContent = signed(s.net, cases ? 0 : 2) + (cases ? ' ea' : ' lbs'); n.className = 'stat-value ' + (s.net < 0 ? 'short' : s.net > 0 ? 'over' : ''); }
     document.querySelectorAll('.chip').forEach(ch => { ch.querySelector('b').textContent = s[ch.dataset.filter === 'all' ? 'total' : ch.dataset.filter]; });
   }
 
@@ -573,10 +573,10 @@
         rows.push([s.name, s.upc, s.sysCases, c.sysEa, s.cntCases ?? '', s.cntEaches ?? '', c.counted ? c.cntEa : '', c.counted ? c.rawEa : '', c.counted ? c.diffEa : '', c.counted ? c.diffCases : '', c.counted ? LABEL[c.status] : 'Not counted']);
       });
     } else {
-      rows = [['Item', 'On hand (lbs)', 'Counted (lbs)', 'Exact gap (lbs)', 'Gap rounded (lbs)', 'Result']];
+      rows = [['Item', 'On hand (lbs)', 'Counted (lbs)', 'Gap (lbs)', 'Result']];
       data.weight.forEach(i => {
         const c = calcWeight(i);
-        rows.push([i.name, i.onHand ?? '', i.count ?? '', c.counted ? c.raw : '', c.counted ? c.diff : '', c.counted ? LABEL[c.status] : 'Not counted']);
+        rows.push([i.name, i.onHand ?? '', i.count ?? '', c.counted ? c.diff : '', c.counted ? LABEL[c.status] : 'Not counted']);
       });
     }
     const csv = '﻿' + rows.map(r => r.map(cell).join(',')).join('\r\n');
@@ -593,7 +593,7 @@
     const s = stats();
     const when = new Date().toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
     const unit = tab === 'cases' ? 'ea' : 'lbs';
-    const netTxt = s.counted ? `Net ${signed(s.net, tab === 'cases' ? 0 : 1)} ${unit}.` : 'Nothing counted yet.';
+    const netTxt = s.counted ? `Net ${signed(s.net, tab === 'cases' ? 0 : 2)} ${unit}.` : 'Nothing counted yet.';
     let head, body;
     if (tab === 'cases') {
       head = '<th>Product</th><th class="r">Per case</th><th class="r">System cases</th><th class="r">System ea</th><th class="r">Counted</th><th class="r">Counted ea</th><th class="r">Gap cases</th><th class="r">Gap ea</th><th>Result</th>';
@@ -609,7 +609,7 @@
       body = data.weight.map(it => {
         const c = calcWeight(it);
         return `<tr><td class="p-name">${esc(it.name)}</td><td class="r">${isNum(it.onHand) ? num(it.onHand) : ''}</td><td class="r">${isNum(it.count) ? num(it.count) : ''}</td>
-          <td class="r ${c.status || 'none'}">${c.counted ? signed(c.diff, 1) : ''}</td><td class="${c.status || 'none'}">${c.counted ? LABEL[c.status] : 'Not counted'}</td></tr>`;
+          <td class="r ${c.status || 'none'}">${c.counted ? signed(c.diff, 2) : ''}</td><td class="${c.status || 'none'}">${c.counted ? LABEL[c.status] : 'Not counted'}</td></tr>`;
       }).join('');
     }
     $('#print').innerHTML = `<h1>${CFG[tab].title}</h1>
