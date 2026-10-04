@@ -40,13 +40,13 @@ Press Enter to jump to the next field. Use the search box to find a product, and
 System eaches   = system cases x units per case
 Counted eaches  = (counted cases x units per case) + counted eaches
 Exact gap       = counted eaches - system eaches
-Gap shown       = exact gap rounded to the nearest whole each
-Gap in cases    = counted eaches / units per case - system cases
+Gap in cases    = counted eaches / units per case - system cases   (the big number)
+Gap in eaches   = exact gap rounded to the nearest whole each     (shown beside it)
 ```
 
-Example: 0.89 system cases at 9 per case is 8.01 eaches. You count 7 loose eaches. The exact gap is -1.01 eaches, which shows as **-1 ea, Short**. The row also shows the exact gap so you can check the work.
+Example: 0.89 system cases at 9 per case is 8.01 eaches. You count 7 loose eaches. The exact gap is -1.01 eaches, which is -0.1122 cases. The row shows **-0.11 cs** with **-1 ea** beside it, and the exact gap underneath so you can check the work.
 
-The label follows the rounded gap, so a difference smaller than half an each shows as Exact.
+When units per case is 1, a case and an each are the same thing, so the gap is shown exactly in cases with no rounding (for example 10.42 system cases and 8 counted is **-2.42 cs**). For everything else, the Short, Over, or Exact label follows the rounded gap in eaches, so a difference smaller than half an each shows as Exact.
 
 **Weight Count**
 
@@ -56,7 +56,7 @@ Gap = counted lbs - on hand lbs
 
 Weight is not rounded. It shows the exact gap to the hundredth of a pound.
 
-**Net variance** is the sum of the gaps shown for every counted row.
+**Net variance** is the sum of the gaps in eaches for every counted row.
 
 ## Printing and exporting
 

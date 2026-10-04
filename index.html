@@ -114,7 +114,7 @@
   .f.mine input:focus { border-color: var(--lime); }
 
   .r-out { grid-column: 1 / -1; padding-top: 4px; }
-  .diff { display: flex; align-items: baseline; gap: 8px; }
+  .diff { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
   .diff strong { font: 800 34px/1 var(--body); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
   .diff span { font-size: 14px; font-weight: 600; color: var(--fog); }
   .row.short .diff strong { color: var(--short); }
@@ -177,6 +177,9 @@
     .stat.net .stat-value { font-size: 54px; }
   }
   .diff .unit { font: 500 13px var(--mono); color: var(--fog); }
+  .diff .alt { font: 700 18px/1 var(--body); color: var(--fog); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .row.short .diff .alt { color: var(--short); }
+  .row.over  .diff .alt { color: var(--lime); }
   .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font: 500 11px/1.6 var(--mono); border: 1px solid; }
   .pill.short { color: var(--short); background: rgba(255,107,107,0.10); border-color: rgba(255,107,107,0.3); }
   .pill.over  { color: var(--lime);  background: rgba(200,253,14,0.10);  border-color: rgba(200,253,14,0.3); }
@@ -340,7 +343,8 @@
     if (!isNum(s.cntCases) && !isNum(s.cntEaches)) return { counted: false, sysEa };
     const cntEa = r2((+s.cntCases || 0) * s.upc + (+s.cntEaches || 0));
     const rawEa = r2(cntEa - sysEa);
-    const diffEa = (Math.sign(rawEa) * Math.round(Math.abs(rawEa))) || 0;
+    // A case of 1 is counted in cases, so keep its gap exact. Otherwise round to whole eaches.
+    const diffEa = s.upc === 1 ? (rawEa || 0) : ((Math.sign(rawEa) * Math.round(Math.abs(rawEa))) || 0);
     const diffCases = r4(cntEa / s.upc - s.sysCases);
     return { counted: true, sysEa, cntEa, rawEa, diffEa, diffCases, status: diffEa < 0 ? 'short' : diffEa > 0 ? 'over' : 'even' };
   }
@@ -389,15 +393,15 @@
   function outFor(it) {
     const c = CFG[tab].calc(it);
     if (tab === 'cases') {
-      // A case of 1 is counted in cases, so label those results cs instead of ea.
-      const single = it.upc === 1, u = single ? 'cs' : 'ea';
-      if (!c.counted) return { cls: 'none', html: `<div class="diff"><strong>&mdash;</strong></div><p class="detail">System shows ${num(c.sysEa)} ${u}. Enter your count.</p>` };
+      const single = it.upc === 1;
+      if (!c.counted) return { cls: 'none', html: `<div class="diff"><strong>&mdash;</strong></div><p class="detail">System shows ${num(it.sysCases, 4)} cs${single ? '' : ' (' + num(c.sysEa) + ' ea)'}. Enter your count.</p>` };
+      const alt = single ? '' : `<span class="alt">${signed(c.diffEa, 0)} ea</span>`;
       const detail = single
-        ? `Counted ${num(c.cntEa)} of ${num(c.sysEa)} cs. Exact gap ${signed(c.rawEa)} cs.`
-        : `Counted ${num(c.cntEa)} of ${num(c.sysEa)} ea. Exact gap ${signed(c.rawEa)} ea, ${signed(c.diffCases, 4)} cases.`;
+        ? `Counted ${num(c.cntEa)} of ${num(c.sysEa)} cs.`
+        : `Counted ${num(c.cntEa)} of ${num(c.sysEa)} ea. Exact gap ${signed(c.rawEa)} ea.`;
       return {
         cls: c.status,
-        html: `<div class="diff"><strong>${signed(c.diffEa, 0)}</strong><span class="unit">${u}</span><span class="pill ${c.status}">${LABEL[c.status]}</span></div>
+        html: `<div class="diff"><strong>${signed(c.diffCases, 2)}</strong><span class="unit">cs</span>${alt}<span class="pill ${c.status}">${LABEL[c.status]}</span></div>
                <p class="detail">${detail}</p>`
       };
     }
@@ -440,7 +444,7 @@
     $('#s-short').textContent = s.short;
     const n = $('#s-net');
     if (!s.counted) { n.textContent = '\u2014'; n.className = 'stat-value none'; }
-    else { n.textContent = signed(s.net, cases ? 0 : 2) + (cases ? ' ea' : ' lbs'); n.className = 'stat-value ' + (s.net < 0 ? 'short' : s.net > 0 ? 'over' : ''); }
+    else { n.textContent = signed(s.net, 2) + (cases ? ' ea' : ' lbs'); n.className = 'stat-value ' + (s.net < 0 ? 'short' : s.net > 0 ? 'over' : ''); }
     document.querySelectorAll('.chip').forEach(ch => { ch.querySelector('b').textContent = s[ch.dataset.filter === 'all' ? 'total' : ch.dataset.filter]; });
   }
 
@@ -642,7 +646,7 @@
         const g = c.status || 'none';
         return `<tr><td class="p-name">${esc(it.name)}</td><td class="r mute">${num(it.upc)}</td><td class="r mute">${num(it.sysCases, 4)}</td><td class="r mute">${num(c.sysEa)}</td>
           <td class="r">${counted}</td><td class="r">${c.counted ? num(c.cntEa) : ''}</td>
-          <td class="r ${g}">${c.counted ? signed(c.diffCases, 4) : ''}</td><td class="r gap ${g}">${c.counted ? signed(c.diffEa, 0) : ''}</td><td>${res(c)}</td></tr>`;
+          <td class="r ${g}">${c.counted ? signed(c.diffCases, 4) : ''}</td><td class="r gap ${g}">${c.counted ? signed(c.diffEa, 2) : ''}</td><td>${res(c)}</td></tr>`;
       }).join('');
     } else {
       widths = [34, 18, 18, 14, 16];
@@ -655,7 +659,7 @@
     }
     const span = widths.length;
     const netCls = !s.counted ? 'none' : s.net < 0 ? 'short' : s.net > 0 ? 'over' : '';
-    const net = s.counted ? `${signed(s.net, cases ? 0 : 2)} ${unit}` : '\u2014';
+    const net = s.counted ? `${signed(s.net, 2)} ${unit}` : '\u2014';
     const noun = CFG[tab].noun + 's';
     $('#print').innerHTML = `
       <div class="p-top">
