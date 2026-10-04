@@ -247,8 +247,8 @@
       const has = hasOnHand && hasCount;
       const diffRaw = has ? round2(item.count - item.onHand) : null;
       const diff    = diffRaw === null ? null
-                    : diffRaw < 0 ? -Math.ceil(Math.abs(diffRaw) * 10) / 10
-                    : Math.ceil(diffRaw * 10) / 10;
+                    : diffRaw < 0 ? -Math.round(Math.abs(diffRaw) * 10) / 10
+                    : Math.round(diffRaw * 10) / 10;
 
       const isUnder = diff !== null && diff < 0;
       const isOver  = diff !== null && diff > 0;
@@ -297,7 +297,7 @@
     const counted = items.filter(i => i.onHand !== null && i.count !== null);
     const diffOf  = i => {
       const r = round2(i.count - i.onHand);
-      return r < 0 ? -Math.ceil(Math.abs(r) * 10) / 10 : Math.ceil(r * 10) / 10;
+      return r < 0 ? -Math.round(Math.abs(r) * 10) / 10 : Math.round(r * 10) / 10;
     };
     const over  = counted.filter(i => diffOf(i) > 0).length;
     const under = counted.filter(i => diffOf(i) < 0).length;
@@ -368,7 +368,7 @@
     items.forEach(i => {
       const has  = i.onHand !== null && i.count !== null;
       const dr   = has ? round2(i.count - i.onHand) : '';
-      const diff = has ? (dr < 0 ? -Math.ceil(Math.abs(dr) * 10) / 10 : Math.ceil(dr * 10) / 10) : '';
+      const diff = has ? (dr < 0 ? -Math.round(Math.abs(dr) * 10) / 10 : Math.round(dr * 10) / 10) : '';
       const status = !has ? 'No Count' : diff > 0 ? 'Over' : diff < 0 ? 'Short' : 'Exact';
       rows.push([i.name, i.onHand ?? '', i.count ?? '', diff, status]);
     });
