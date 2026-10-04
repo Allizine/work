@@ -154,7 +154,7 @@
 
   /* ── Stockcount look: headline, stat cards, pills ── */
   .top { align-items: flex-end; padding-top: 22px; }
-  .title { margin: 0 0 6px; font: 800 clamp(30px, 7vw, 52px)/1 var(--display); letter-spacing: -0.045em; }
+  .title { margin: 0 0 8px; font: 800 clamp(34px, 8vw, 56px)/1 var(--display); letter-spacing: -0.035em; }
   .title span { color: var(--lime); }
   .subtitle { margin: 0; color: var(--fog); font-size: 13.5px; max-width: 46ch; }
   .stats { display: grid; grid-template-columns: repeat(4, 1fr) 1.7fr; gap: 12px; padding: 26px 0 24px; }
@@ -209,7 +209,7 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <h1 class="title" id="title">STOCK<span>COUNT</span></h1>
+        <h1 class="title" id="title">Case <span>Count</span></h1>
         <p class="subtitle" id="subtitle"></p>
       </div>
       <div class="top-actions">
@@ -222,8 +222,8 @@
   <div class="tabs-bar">
     <div class="wrap">
       <div class="tabs" role="tablist" aria-label="Count type">
-        <button class="tab" role="tab" id="tab-cases"  data-tab="cases"  type="button">Case count</button>
-        <button class="tab" role="tab" id="tab-weight" data-tab="weight" type="button">Weight count</button>
+        <button class="tab" role="tab" id="tab-cases"  data-tab="cases"  type="button">Case Count</button>
+        <button class="tab" role="tab" id="tab-weight" data-tab="weight" type="button">Weight Count</button>
       </div>
     </div>
   </div>
@@ -322,8 +322,8 @@
 
   /* ── State ── */
   const CFG = {
-    cases:  { key: 'sc3_skus',  calc: calcCase,   noun: 'product', title: 'Case count' },
-    weight: { key: 'wc1_items', calc: calcWeight, noun: 'item',    title: 'Weight count' }
+    cases:  { key: 'sc3_skus',  calc: calcCase,   noun: 'product', title: 'Case Count' },
+    weight: { key: 'wc1_items', calc: calcWeight, noun: 'item',    title: 'Weight Count' }
   };
   const data = {
     cases:  [].concat(store.get(CFG.cases.key, [])),
@@ -440,11 +440,11 @@
     $('#cols').innerHTML = cases
       ? '<span>Product</span><span>Units per case</span><span>System cases</span><span>Counted cases</span><span>Counted eaches</span><span>Result</span>'
       : '<span>Item</span><span>On hand (lbs)</span><span>Counted (lbs)</span><span>Result</span>';
-    $('#title').innerHTML = cases ? 'STOCK<span>COUNT</span>' : 'WEIGHT<span>COUNT</span>';
+    $('#title').innerHTML = cases ? 'Case <span>Count</span>' : 'Weight <span>Count</span>';
     $('#subtitle').textContent = cases ? 'System quantity in cases against your count in cases and loose eaches.' : 'System on-hand pounds against the morning count.';
     $('#l-total').textContent = cases ? 'Products' : 'Items';
     $('#l-net').textContent = cases ? 'Net variance (ea)' : 'Net variance (lbs)';
-    document.title = cases ? 'Case count' : 'Weight count';
+    document.title = cases ? 'Case Count \u00b7 Herorical' : 'Weight Count \u00b7 Herorical';
     $('#q').placeholder = cases ? 'Search products' : 'Search items';
     $('#add-btn').textContent = cases ? 'Add product' : 'Add item';
     $('#add-title').textContent = cases ? 'Add product' : 'Add item';
