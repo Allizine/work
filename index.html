@@ -389,11 +389,16 @@
   function outFor(it) {
     const c = CFG[tab].calc(it);
     if (tab === 'cases') {
-      if (!c.counted) return { cls: 'none', html: `<div class="diff"><strong>&mdash;</strong></div><p class="detail">System shows ${num(c.sysEa)} ea. Enter your count.</p>` };
+      // A case of 1 is counted in cases, so label those results cs instead of ea.
+      const single = it.upc === 1, u = single ? 'cs' : 'ea';
+      if (!c.counted) return { cls: 'none', html: `<div class="diff"><strong>&mdash;</strong></div><p class="detail">System shows ${num(c.sysEa)} ${u}. Enter your count.</p>` };
+      const detail = single
+        ? `Counted ${num(c.cntEa)} of ${num(c.sysEa)} cs. Exact gap ${signed(c.rawEa)} cs.`
+        : `Counted ${num(c.cntEa)} of ${num(c.sysEa)} ea. Exact gap ${signed(c.rawEa)} ea, ${signed(c.diffCases, 4)} cases.`;
       return {
         cls: c.status,
-        html: `<div class="diff"><strong>${signed(c.diffEa, 0)}</strong><span class="unit">ea</span><span class="pill ${c.status}">${LABEL[c.status]}</span></div>
-               <p class="detail">Counted ${num(c.cntEa)} of ${num(c.sysEa)} ea. Exact gap ${signed(c.rawEa)} ea, ${signed(c.diffCases, 4)} cases.</p>`
+        html: `<div class="diff"><strong>${signed(c.diffEa, 0)}</strong><span class="unit">${u}</span><span class="pill ${c.status}">${LABEL[c.status]}</span></div>
+               <p class="detail">${detail}</p>`
       };
     }
     if (!c.counted) {
