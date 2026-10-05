@@ -2,7 +2,7 @@
 
 A fast count sheet for comparing what your inventory system says you have against what you actually counted. It has two tools in one page: **Case Count** for items counted in cases and loose eaches, and **Weight Count** for items counted by the pound.
 
-**Live:** https://allizine.github.io/work
+**Live:** https://allizine.github.io/work (the landing page; the tools are at `/counts.html`)
 
 ## What it does
 
@@ -75,7 +75,8 @@ Your counts are stored in your own browser on the device you are using. Nothing 
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | The whole app: page, styles, and logic in one file |
+| `index.html` | The landing page that leads to both tools |
+| `counts.html` | The tools: Case Count and Weight Count, in one file |
 | `weight.html` | Redirects old links to the Weight Count tab |
 | `LICENSE` | License terms |
 
