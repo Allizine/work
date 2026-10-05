@@ -30,6 +30,8 @@ Your system reports stock as decimal cases (for example 1.83 cases). You count t
 2. Enter the **On hand (lbs)** from your system and the **Counted (lbs)** from the count.
 3. Read the gap in pounds.
 
+The add form also takes the numbers. If you add a name that is already on the list, the numbers are added to that row instead of making a duplicate (for example 105 and 240, then 120 and 225, gives 225 and 465). Undo reverses it.
+
 Press Enter to jump to the next field. Use the search box to find a product, and the filter buttons to focus on the ones that are short.
 
 ## How the math works

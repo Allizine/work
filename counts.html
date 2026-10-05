@@ -313,6 +313,12 @@
     <h2 id="add-title">Add product</h2>
     <label class="field"><span>Product name</span><input id="a-name" required maxlength="80" placeholder="Ribeye, bone-in"></label>
     <label class="field" id="a-upc-wrap"><span>Units per case</span><input id="a-upc" type="number" inputmode="numeric" min="1" step="1" placeholder="9"></label>
+    <label class="field" data-w="cases"><span>System cases</span><input id="a-sys" type="number" inputmode="decimal" min="0" step="any"></label>
+    <label class="field" data-w="cases"><span>Counted cases</span><input id="a-cc" type="number" inputmode="numeric" min="0" step="1"></label>
+    <label class="field" data-w="cases"><span>Counted eaches</span><input id="a-ce" type="number" inputmode="numeric" min="0" step="1"></label>
+    <label class="field" data-w="weight"><span>On hand (lbs)</span><input id="a-oh" type="number" inputmode="decimal" min="0" step="any"></label>
+    <label class="field" data-w="weight"><span>Counted (lbs)</span><input id="a-ct" type="number" inputmode="decimal" min="0" step="any"></label>
+    <p class="field" style="color:var(--fog);font-size:13px;margin-top:-4px">Add the same name again and the numbers are added to the existing row.</p>
     <div class="dlg-actions">
       <button class="btn" type="button" id="a-cancel">Cancel</button>
       <button class="btn primary" type="submit" id="a-submit">Add product</button>
@@ -495,6 +501,7 @@
     $('#add-title').textContent = cases ? 'Add product' : 'Add item';
     $('#a-submit').textContent = cases ? 'Add product' : 'Add item';
     $('#a-upc-wrap').hidden = !cases;
+    document.querySelectorAll('#add-form [data-w]').forEach(el => el.hidden = el.dataset.w !== tab);
     document.querySelectorAll('.chip').forEach(ch => ch.setAttribute('aria-pressed', ch.dataset.filter === filter));
     renderList();
   }
@@ -585,7 +592,7 @@
   /* Add dialog */
   const dlg = $('#add-dlg');
   $('#add-btn').addEventListener('click', () => {
-    $('#a-name').value = ''; $('#a-upc').value = '';
+    document.querySelectorAll('#add-form input').forEach(i => i.value = '');
     dlg.showModal(); $('#a-name').focus();
   });
   $('#a-cancel').addEventListener('click', () => dlg.close());
@@ -595,16 +602,30 @@
     const name = $('#a-name').value.trim();
     const upc = parseInt($('#a-upc').value) || 0;
     if (!name) { $('#a-name').focus(); return; }
-    if (tab === 'cases' && upc < 1) { $('#a-upc').focus(); return; }
-    const id = ++idSeed;
-    data[tab].push(tab === 'cases'
-      ? { id, name, upc, sysCases: 0, cntCases: null, cntEaches: null }
-      : { id, name, onHand: null, count: null });
-    save(); dlg.close();
+    const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? null : v; };
+    const plus = (a, b) => (a === null && b === null) ? null : r2((a || 0) + (b || 0));
+    const fields = tab === 'cases' ? { sysCases: num('#a-sys'), cntCases: num('#a-cc'), cntEaches: num('#a-ce') } : { onHand: num('#a-oh'), count: num('#a-ct') };
+    const dup = data[tab].find(x => String(x.name).trim().toLowerCase() === name.toLowerCase());
+    let id;
+    if (dup) {
+      id = dup.id;
+      const before = {}; Object.keys(fields).forEach(k => { before[k] = dup[k]; dup[k] = plus(dup[k] ?? null, fields[k]); });
+      if (tab === 'cases') dup.sysCases = dup.sysCases || 0;
+      const t0 = tab;
+      save(); dlg.close();
+      toast(`Added to ${dup.name}.`, () => { Object.assign(dup, before); save(t0); if (tab === t0) renderTab(); });
+    } else {
+      if (tab === 'cases' && upc < 1) { $('#a-upc').focus(); return; }
+      id = ++idSeed;
+      data[tab].push(tab === 'cases'
+        ? { id, name, upc, sysCases: fields.sysCases || 0, cntCases: fields.cntCases, cntEaches: fields.cntEaches }
+        : { id, name, onHand: fields.onHand, count: fields.count });
+      save(); dlg.close();
+    }
     filter = 'all'; query = ''; $('#q').value = '';
     renderTab();
     const li = $(`[data-id="${id}"]`);
-    if (li) { li.scrollIntoView({ block: 'center' }); const first = li.querySelector('[data-f="sysCases"], [data-f="onHand"]'); if (first) { first.focus(); first.select(); } }
+    if (li) li.scrollIntoView({ block: 'center' });
   });
 
   /* ── CSV ── */
