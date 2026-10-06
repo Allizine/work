@@ -67,10 +67,10 @@
   }
 
   /* ── Tools ── */
-  .tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding-bottom: 72px; }
+  .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding-bottom: 72px; }
   .tool { display: flex; flex-direction: column; min-height: 250px; padding: 30px; background: var(--surface); border: 1px solid var(--steel); border-radius: 14px; text-decoration: none; transition: border-color .15s; }
   .tool:hover, .tool:focus-visible { border-color: var(--lime); }
-  .tool h2 { margin: 0 0 10px; font: 800 clamp(24px, 2.6vw, 32px)/1.1 var(--display); }
+  .tool h2 { margin: 0 0 10px; font: 800 clamp(26px, 3.4vw, 36px)/1.1 var(--display); }
   .tool p { margin: 0; max-width: 36ch; color: var(--fog); }
   .saved { margin-top: auto; padding-top: 28px; font: 400 13px/1.5 var(--mono); color: var(--fog); }
   .saved strong { display: block; margin-top: 2px; font: 800 24px/1.2 var(--body); font-variant-numeric: tabular-nums; color: var(--white); }
@@ -131,6 +131,12 @@
         <p>Leave notes for the store: tasks, heads-ups and handoffs. Pin the important ones.</p>
         <div class="saved" id="saved-notes"></div>
         <span class="open">Open Notes Board</span>
+      </a>
+      <a class="tool" href="checklist.html">
+        <h2>Print Checklist</h2>
+        <p>Opening, closing, receiving and deep clean lists. Edit them and print a sheet with boxes to tick.</p>
+        <div class="saved">Ready to print.</div>
+        <span class="open">Open Print Checklist</span>
       </a>
     </section>
   </main>

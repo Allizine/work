@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<!--
+  Copyright (c) 2026 Herorical. All rights reserved.
+  This source code is proprietary. Copying, modifying, or redistributing it
+  without prior written permission is prohibited. See LICENSE.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07080C">
+<title>Print Checklist · Herorical</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --night: #07080C; --surface: #0F121B; --steel: #252A35; --fog: #A5ABBA; --white: #F8F8F6; --lime: #C8FD0E;
+    --display: 'Syne', system-ui, sans-serif; --body: 'Manrope', system-ui, sans-serif; --mono: 'DM Mono', ui-monospace, monospace;
+    color-scheme: dark;
+  }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--night); color: var(--white); font: 400 16px/1.5 var(--body); padding-bottom: env(safe-area-inset-bottom); }
+  button, input, textarea, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+  .home { display: inline-block; margin: 22px 0 0; color: var(--fog); font: 500 13px var(--mono); text-decoration: none; }
+  .home:hover { color: var(--lime); }
+  h1 { margin: 10px 0 6px; font: 800 clamp(28px, 5vw, 40px)/1.1 var(--display); }
+  .sub { margin: 0 0 24px; color: var(--fog); }
+
+  .layout { display: grid; grid-template-columns: 360px 1fr; gap: 28px; align-items: start; padding-bottom: 40px; }
+  .editor { display: grid; gap: 16px; }
+  .field span, .lab { display: block; margin-bottom: 6px; font-size: 13px; color: var(--fog); }
+  select, input[type=text], textarea { width: 100%; padding: 0 12px; background: var(--surface); border: 1px solid var(--steel); border-radius: 8px; height: 46px; }
+  textarea { height: 300px; padding: 12px; resize: vertical; line-height: 1.45; font-family: var(--mono); font-size: 14px; }
+  select:focus, input:focus, textarea:focus { border-color: var(--lime); outline: none; }
+  .hint { margin: 6px 0 0; font-size: 12.5px; color: var(--fog); }
+  .opts { display: grid; gap: 10px; }
+  .opts label { display: flex; align-items: center; gap: 10px; min-height: 32px; cursor: pointer; }
+  .opts input { width: 20px; height: 20px; accent-color: var(--lime); }
+  .btn { height: 48px; border: 1px solid var(--steel); border-radius: 8px; background: var(--surface); font-weight: 700; cursor: pointer; }
+  .btn:hover { border-color: var(--fog); }
+  .btn.primary { background: var(--lime); border-color: var(--lime); color: var(--night); }
+
+  /* the sheet: always a white page, on screen and on paper */
+  .paper { background: #fff; color: #111; border-radius: 6px; padding: 28px 30px 24px; min-height: 420px; font-family: var(--body); }
+  .paper h2 { margin: 0 0 14px; font: 800 24px/1.15 var(--body); letter-spacing: -0.01em; }
+  .lines { display: flex; flex-wrap: wrap; gap: 14px 28px; margin: 0 0 18px; }
+  .lines div { flex: 1 1 140px; border-bottom: 1.5px solid #111; padding-top: 18px; font: 500 11px var(--mono); color: #444; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font: 500 11px var(--mono); color: #444; padding: 0 0 6px; border-bottom: 2px solid #111; }
+  td { padding: 8px 6px 8px 0; border-bottom: 1px solid #bbb; vertical-align: middle; font-size: 15px; }
+  td.box { width: 30px; }
+  td.box i { display: block; width: 20px; height: 20px; border: 2px solid #111; border-radius: 3px; }
+  td.ini { width: 74px; border-left: 1px solid #bbb; }
+  tr.sec td { padding: 16px 0 6px; border-bottom: 2px solid #111; font: 800 13px var(--body); text-transform: uppercase; letter-spacing: .06em; }
+  tr { break-inside: avoid; }
+  .notes { margin-top: 20px; font: 500 11px var(--mono); color: #444; }
+  .notes div { height: 30px; border-bottom: 1px solid #999; }
+  .empty { color: #666; padding: 30px 0; }
+  .credit { margin-top: 18px; text-align: center; font: 400 10px var(--body); color: #888; }
+
+  .foot { padding: 0 0 36px; text-align: center; color: var(--fog); opacity: .6; font-size: 12px; }
+
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .paper { padding: 20px 16px; } textarea { height: 240px; } }
+
+  @media print {
+    @page { size: portrait; margin: 12mm; }
+    html, body { background: #fff !important; }
+    body > .wrap > :not(.layout), .editor, .foot { display: none !important; }
+    .wrap { max-width: none; padding: 0; }
+    .layout { display: block; padding: 0; }
+    .paper { padding: 0; border-radius: 0; min-height: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="home" href="index.html">Herorical Counts</a>
+  <h1>Print Checklist</h1>
+  <p class="sub">Pick a list, change it to fit your department, and print it.</p>
+
+  <div class="layout">
+    <div class="editor">
+      <label class="field"><span>Start from</span>
+        <select id="tpl"></select>
+      </label>
+      <label class="field"><span>Title</span>
+        <input id="title" type="text" maxlength="60">
+      </label>
+      <div>
+        <label class="lab" for="items">Items, one per line</label>
+        <textarea id="items" spellcheck="true"></textarea>
+        <p class="hint">Start a line with # to make a section heading.</p>
+      </div>
+      <div class="opts">
+        <label><input type="checkbox" id="o-head" checked> Date, name and shift lines</label>
+        <label><input type="checkbox" id="o-ini" checked> Initials column</label>
+        <label><input type="checkbox" id="o-notes" checked> Notes lines at the bottom</label>
+      </div>
+      <button class="btn primary" type="button" id="print">Print</button>
+    </div>
+
+    <div class="paper" id="paper" aria-label="Checklist preview"></div>
+  </div>
+
+  <div class="foot">&copy; 2026 Herorical. All rights reserved.</div>
+</div>
+
+<script>
+  /* Copyright (c) 2026 Herorical. All rights reserved. See LICENSE. */
+  const KEY = 'cl1_state';
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const TEMPLATES = {
+    'Opening': { title: 'Opening Checklist', items: `# Before you start
+Wash hands, apron and gloves on
+Check cooler and freezer temperatures
+Check case temperatures
+# The case
+Pull anything past its date
+Rotate product, oldest to the front
+Fill gaps from backstock
+Check each price tag against its label
+Wipe down case glass and shelves
+# Prep area
+Sanitize cutting boards, knives and counters
+Check the scale reads zero
+Stock labels, paper and gloves
+Read the notes from the last shift` },
+    'Closing': { title: 'Closing Checklist', items: `# Case
+Pull anything expiring tonight and mark down
+Straighten and face the case
+Check case temperatures
+# Backroom
+Put away all product, nothing left out
+Check cooler and freezer temperatures
+Date and label anything opened
+# Clean up
+Wash, rinse and sanitize knives, boards and tables
+Clean slicer and grinder
+Empty trash and scrap bins
+Sweep and mop the floor
+# Last
+Write the notes for tomorrow
+Turn off equipment and lights` },
+    'Receiving': { title: 'Receiving Checklist', items: `# On arrival
+Check the truck and product temperature
+Match cases to the order
+Check date codes on every case
+# Inspect
+Look for damage, leaks and open cases
+Spot check a few case weights
+Note any shorts or damaged cases
+# Put away
+Move product to the cooler or freezer right away
+Rotate: new behind old
+Sign the paperwork and keep a copy` },
+    'Weekly deep clean': { title: 'Weekly Deep Clean', items: `# Equipment
+Break down and clean the grinder
+Break down and clean the slicer
+Clean and sharpen knives
+Clean the band saw
+# Cooler and freezer
+Wipe shelves and walls
+Check floor drains
+Clear out old product
+# Case and floor
+Deep clean the case, remove and wash pans
+Scrub floors and drains
+Wipe down walls, doors and handles` },
+    'Blank': { title: 'Checklist', items: '' }
+  };
+
+  $('#tpl').innerHTML = Object.keys(TEMPLATES).map(k => `<option>${k}</option>`).join('');
+
+  let state = { tpl: 'Opening', title: TEMPLATES['Opening'].title, items: TEMPLATES['Opening'].items, head: true, ini: true, notes: true };
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && typeof s.items === 'string') state = Object.assign(state, s); } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+  function syncInputs() {
+    $('#tpl').value = TEMPLATES[state.tpl] ? state.tpl : 'Blank';
+    $('#title').value = state.title; $('#items').value = state.items;
+    $('#o-head').checked = state.head; $('#o-ini').checked = state.ini; $('#o-notes').checked = state.notes;
+  }
+
+  function render() {
+    const lines = state.items.split('\n').map(l => l.trim()).filter(Boolean);
+    let rows = '';
+    lines.forEach(l => {
+      if (l.startsWith('#')) rows += `<tr class="sec"><td colspan="${state.ini ? 3 : 2}">${esc(l.replace(/^#+\s*/, ''))}</td></tr>`;
+      else rows += `<tr><td class="box"><i></i></td><td>${esc(l)}</td>${state.ini ? '<td class="ini"></td>' : ''}</tr>`;
+    });
+    const head = state.head ? '<div class="lines"><div>Date</div><div>Name</div><div>Shift</div></div>' : '';
+    const notes = state.notes ? `<div class="notes">Notes${'<div></div>'.repeat(4)}</div>` : '';
+    $('#paper').innerHTML = `<h2>${esc(state.title || 'Checklist')}</h2>${head}`
+      + (rows ? `<table><thead><tr><th></th><th>Task</th>${state.ini ? '<th>Initials</th>' : ''}</tr></thead><tbody>${rows}</tbody></table>` : '<p class="empty">Add items on the left.</p>')
+      + notes + '<p class="credit">&copy; 2026 Herorical</p>';
+  }
+
+  $('#tpl').addEventListener('change', e => {
+    const t = TEMPLATES[e.target.value];
+    state.tpl = e.target.value; state.title = t.title; state.items = t.items;
+    syncInputs(); save(); render();
+  });
+  $('#title').addEventListener('input', e => { state.title = e.target.value; save(); render(); });
+  $('#items').addEventListener('input', e => { state.items = e.target.value; save(); render(); });
+  [['#o-head', 'head'], ['#o-ini', 'ini'], ['#o-notes', 'notes']].forEach(([s, k]) => $(s).addEventListener('change', e => { state[k] = e.target.checked; save(); render(); }));
+  $('#print').addEventListener('click', () => window.print());
+
+  syncInputs(); render();
+</script>
+</body>
+</html>

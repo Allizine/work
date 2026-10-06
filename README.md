@@ -40,6 +40,10 @@ Press Enter to jump to the next field. Use the search box to find a product, and
 
 Type a note, pick an area (Store, Meat, Receiving, Front end, Other), add your initials and post it. Pin the important ones to the top, mark them done, edit them in place, or delete them (Undo brings them back). Filter by area, search, copy everything as text, or print the board. Notes are saved on the device you post from, so other phones and computers will not see them.
 
+### Print Checklist
+
+Pick a starting list (Opening, Closing, Receiving, Weekly deep clean, or Blank), then change the title and the items to fit your department. Start a line with # to make a section heading. The sheet has a box to tick and an initials column for each task, plus optional date, name and shift lines and notes lines. Your edits are saved on the device. Tap Print for a clean one-page sheet.
+
 ## How the math works
 
 **Case Count**
@@ -85,6 +89,7 @@ Your counts are stored in your own browser on the device you are using. Nothing 
 | --- | --- |
 | `index.html` | The landing page that leads to both tools |
 | `notes.html` | Notes Board for leaving notes for the store |
+| `checklist.html` | Printable checklists (opening, closing, receiving, deep clean) |
 | `counts.html` | The tools: Case Count and Weight Count, in one file |
 | `weight.html` | Redirects old links to the Weight Count tab |
 | `LICENSE` | License terms |
