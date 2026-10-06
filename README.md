@@ -32,6 +32,8 @@ Your system reports stock as decimal cases (for example 1.83 cases). You count t
 
 The add form also takes the numbers. If you add a name that is already on the list, the numbers are added to that row instead of making a duplicate (for example 105 and 240, then 120 and 225, gives 225 and 465). Undo reverses it.
 
+Each counted box has a **+** button. Tap it, type a number, and press Enter to add it to what is already there (105, then +120, then +225 makes 450). Undo reverses it.
+
 Press Enter to jump to the next field. Use the search box to find a product, and the filter buttons to focus on the ones that are short.
 
 ## How the math works

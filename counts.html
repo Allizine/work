@@ -112,6 +112,10 @@
   .f input:focus { border-color: var(--lime); outline: none; }
   .f.mine input { border-color: rgba(200,253,14,0.38); background: rgba(200,253,14,0.045); }
   .f.mine input:focus { border-color: var(--lime); }
+  .f.mine { position: relative; }
+  .f.mine input { padding-right: 46px; }
+  .plus { position: absolute; right: 5px; bottom: 5px; width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 1px solid rgba(200,253,14,0.38); border-radius: 7px; background: var(--night); color: var(--lime); font: 700 22px/1 var(--body); cursor: pointer; }
+  .plus:hover, .plus:focus-visible { background: var(--lime); color: var(--night); }
 
   .r-out { grid-column: 1 / -1; padding-top: 4px; }
   .diff { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
@@ -326,6 +330,18 @@
   </form>
 </dialog>
 
+<dialog id="plus-dlg" aria-labelledby="plus-title">
+  <form id="plus-form" autocomplete="off">
+    <h2 id="plus-title">Add to count</h2>
+    <p id="plus-now" style="color:var(--fog);margin:0 0 14px"></p>
+    <label class="field"><span id="plus-lbl">Add</span><input id="plus-in" type="number" inputmode="decimal" min="0" step="any" required></label>
+    <div class="dlg-actions">
+      <button class="btn" type="button" id="plus-cancel">Cancel</button>
+      <button class="btn primary" type="submit">Add</button>
+    </div>
+  </form>
+</dialog>
+
 <script>
   /* Copyright (c) 2026 Herorical. All rights reserved. See LICENSE. */
   /* ── Storage (same keys as before, so saved counts carry over) ── */
@@ -389,13 +405,13 @@
       return `<li class="row" data-id="${it.id}">${head}
         <label class="f"><span>Units per case</span><input data-f="upc" type="number" inputmode="numeric" min="1" step="1" value="${v(it.upc)}"></label>
         <label class="f"><span>System cases</span><input data-f="sysCases" type="number" inputmode="decimal" min="0" step="any" value="${v(it.sysCases)}"></label>
-        <label class="f mine"><span>Counted cases</span><input data-f="cntCases" type="number" inputmode="numeric" min="0" step="1" placeholder="0" value="${v(it.cntCases)}"></label>
-        <label class="f mine"><span>Counted eaches</span><input data-f="cntEaches" type="number" inputmode="numeric" min="0" step="1" placeholder="0" value="${v(it.cntEaches)}"></label>
+        <label class="f mine"><span>Counted cases</span><input data-f="cntCases" type="number" inputmode="numeric" min="0" step="1" placeholder="0" value="${v(it.cntCases)}"><button class="plus" type="button" data-plus="cntCases" data-lbl="Counted cases" aria-label="Add to Counted cases">+</button></label>
+        <label class="f mine"><span>Counted eaches</span><input data-f="cntEaches" type="number" inputmode="numeric" min="0" step="1" placeholder="0" value="${v(it.cntEaches)}"><button class="plus" type="button" data-plus="cntEaches" data-lbl="Counted eaches" aria-label="Add to Counted eaches">+</button></label>
         <div class="r-out"></div></li>`;
     }
     return `<li class="row" data-id="${it.id}">${head}
       <label class="f"><span>On hand (lbs)</span><input data-f="onHand" type="number" inputmode="decimal" min="0" step="any" value="${v(it.onHand)}"></label>
-      <label class="f mine"><span>Counted (lbs)</span><input data-f="count" type="number" inputmode="decimal" min="0" step="any" value="${v(it.count)}"></label>
+      <label class="f mine"><span>Counted (lbs)</span><input data-f="count" type="number" inputmode="decimal" min="0" step="any" value="${v(it.count)}"><button class="plus" type="button" data-plus="count" data-lbl="Counted (lbs)" aria-label="Add to Counted (lbs)">+</button></label>
       <div class="r-out"></div></li>`;
   }
 
@@ -587,6 +603,35 @@
     if (!data[tab].length) return;
     if (!confirm(`Remove all ${CFG[tab].noun}s from the ${CFG[tab].title.toLowerCase()}? This can't be undone.`)) return;
     data[tab].length = 0; save(); renderList();
+  });
+
+  /* Add to a counted number */
+  const pdlg = $('#plus-dlg');
+  let plusTarget = null;
+  ul.addEventListener('click', e => {
+    const b = e.target.closest('[data-plus]');
+    if (!b) return;
+    const it = data[tab].find(x => String(x.id) === b.closest('.row').dataset.id);
+    if (!it) return;
+    plusTarget = { it, f: b.dataset.plus, lbl: b.dataset.lbl, t: tab };
+    $('#plus-title').textContent = it.name || 'Add to count';
+    $('#plus-lbl').textContent = 'Add to ' + b.dataset.lbl;
+    $('#plus-now').textContent = 'Now: ' + (isNum(it[b.dataset.f]) ? it[b.dataset.f] : 0);
+    $('#plus-in').value = '';
+    pdlg.showModal(); $('#plus-in').focus();
+  });
+  $('#plus-cancel').addEventListener('click', () => pdlg.close());
+  pdlg.addEventListener('click', e => { if (e.target === pdlg) pdlg.close(); });
+  $('#plus-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const add = parseFloat($('#plus-in').value);
+    if (isNaN(add) || !plusTarget) return;
+    const { it, f, lbl, t: t0 } = plusTarget;
+    const before = isNum(it[f]) ? it[f] : null;
+    it[f] = r2((before || 0) + add);
+    save(t0); pdlg.close();
+    if (tab === t0) renderList();
+    toast(`${it.name || 'Row'}: ${lbl} now ${it[f]}.`, () => { it[f] = before; save(t0); if (tab === t0) renderList(); });
   });
 
   /* Add dialog */
