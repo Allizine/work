@@ -36,6 +36,10 @@ Each counted box has a **+** button. Tap it, type a number, and press Enter to a
 
 Press Enter to jump to the next field. Use the search box to find a product, and the filter buttons to focus on the ones that are short.
 
+### Notes Board
+
+Type a note, pick an area (Store, Meat, Receiving, Front end, Other), add your initials and post it. Pin the important ones to the top, mark them done, edit them in place, or delete them (Undo brings them back). Filter by area, search, copy everything as text, or print the board. Notes are saved on the device you post from, so other phones and computers will not see them.
+
 ## How the math works
 
 **Case Count**
@@ -80,6 +84,7 @@ Your counts are stored in your own browser on the device you are using. Nothing 
 | File | Purpose |
 | --- | --- |
 | `index.html` | The landing page that leads to both tools |
+| `notes.html` | Notes Board for leaving notes for the store |
 | `counts.html` | The tools: Case Count and Weight Count, in one file |
 | `weight.html` | Redirects old links to the Weight Count tab |
 | `LICENSE` | License terms |
