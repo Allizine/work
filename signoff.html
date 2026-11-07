@@ -117,16 +117,16 @@
     #print .signoff div { flex: 1; padding-top: 22pt; border-bottom: 1pt solid #07080C; font: 700 8pt var(--body); color: #333; }
     #print .signoff div span { display: block; margin-bottom: 2pt; font: 600 10.5pt var(--body); color: #0b0d12; min-height: 13pt; }
     #print .signoff div i { font-style: normal; display: block; margin-top: 3pt; }
-    #print table.grid { font-size: 8.5pt; }
-    #print table.grid th { padding: 5pt 2pt; text-align: center; font-size: 8pt; }
-    #print table.grid th.l { text-align: left; padding-left: 6pt; }
-    #print table.grid td { height: 22pt; padding: 2pt 6pt; border: 0.5pt solid #bbb; font-size: 9.5pt; }
-    #print table.grid td.cell { padding: 0; }
-    #print table.grid tbody tr:nth-child(even) td { background: #fff; }
-    #print table.grid tr.sp td { height: 6mm; padding: 0; border: 0; }
-    #print table.grid tr.sgn td { height: 26pt; border-color: #999; font-weight: 800; }
-    #print table.grid tr.sgn.first td { border-top: 1.5pt solid #07080C; }
-    #print table.grid tr.sgn td.lab { font-size: 9pt; }
+    #print .cart + .cart { break-before: page; }
+    #print .cart .eyebrow { margin: 0 0 3pt; font: 700 8.5pt var(--body); letter-spacing: .08em; text-transform: uppercase; color: #555; }
+    #print .cart h1 { font-size: 24pt; }
+    #print .cart h1.blank { font-size: 15pt; font-weight: 700; }
+    #print table.log th.c, #print table.log td.c { text-align: center; }
+    #print table.log td { height: 21pt; padding: 2pt 8pt; border: 0; border-bottom: 0.5pt solid #bbb; font-size: 10pt; }
+    #print table.log tbody tr:nth-child(even) td { background: #f5f5f2; }
+    #print table.log td.w { font-weight: 800; }
+    #print table.log td.sg, #print table.log td.dt { border-left: 0.5pt solid #bbb; }
+    #print table.log tr.sp td { height: 8mm; padding: 0; border: 0; background: none !important; }
     #print tr.ft td { height: 14mm; vertical-align: top; padding: 10pt 0 0; border: 0; background: none !important; font: 500 8pt var(--body); color: #777; text-align: center; }
   }
 </style>
@@ -166,11 +166,20 @@
   </div>
 
   <div class="panel">
+    <h2>Cart sheets</h2>
+    <p class="hint">Each cart or area gets its own sheet to keep with it. Enter one name per line and print a sheet for each. Leave it empty for a blank sheet you write the name on.</p>
+    <textarea class="t" id="carts" placeholder="Dairy cart&#10;End cap A&#10;Freezer rack" aria-label="Cart or area names" style="height:96px"></textarea>
+    <div class="row">
+      <select class="t" id="weeks" aria-label="Weeks per sheet" style="height:38px;padding:0 10px;background:var(--surface);border:1px solid var(--steel);border-radius:8px"><option value="13">13 weeks</option><option value="26" selected>26 weeks</option><option value="52">52 weeks</option></select>
+      <button class="btn small primary" type="button" id="print-carts">Print cart sheets</button>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Past weeks</h2>
     <div class="hist" id="hist"></div>
     <div class="row">
       <button class="btn small" type="button" id="print-btn">Print this week</button>
-      <button class="btn small" type="button" id="print-grid">Print 13-week sheet</button>
       <button class="btn small" type="button" id="copy">Copy as text</button>
     </div>
   </div>
@@ -300,27 +309,29 @@
         <thead>${sp}<tr><th class="box"></th><th>Code</th><th>Item</th><th>Note</th></tr></thead>
         <tfoot><tr class="ft"><td colspan="4">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}<tr class="sg"><td colspan="4">${signBlock}</td></tr></tbody></table>` : signBlock);
   }
-  /* 13-week landscape sheet: carts down the side, weeks across, initials by hand */
-  const NWEEKS = 13;
-  function buildGrid() {
-    const weeks = Array.from({ length: NWEEKS }, (_, i) => fmt(parse(shift(cur, i))));
-    const n = Math.max(12, S.items.length);
-    const blank = '<td class="cell"></td>'.repeat(NWEEKS);
-    let rows = '';
-    for (let i = 0; i < n; i++) { const it = S.items[i]; rows += `<tr><td>${it ? esc(it.name) : ''}</td><td>${it ? esc(it.code) : ''}</td>${blank}</tr>`; }
-    ['Signed off by (initials)', 'Date signed'].forEach((l, k) => { rows += `<tr class="sgn${k === 0 ? ' first' : ''}"><td class="lab" colspan="2">${l}</td>${blank}</tr>`; });
-    const cols = `<col style="width:118pt"><col style="width:100pt">` + `<col>`.repeat(NWEEKS);
-    $('#print').innerHTML = `<div class="p-top"><div><h1>Weekly Single Stock Sign Off</h1><p class="p-meta">13 weeks from ${esc(fmt(parse(cur)))}. Initial each cart when it is checked, then sign off the week.</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
-      <table class="grid"><colgroup>${cols}</colgroup><thead><tr class="sp"><td colspan="${NWEEKS + 2}"></td></tr>
-        <tr><th class="l">Cart / location</th><th class="l">Code / notes</th>${weeks.map(w => `<th>${esc(w)}</th>`).join('')}</tr></thead>
-        <tfoot><tr class="ft"><td colspan="${NWEEKS + 2}">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}</tbody></table>`;
+  /* one sign-off log per cart or area: weeks down the page, initials by hand */
+  function buildCarts() {
+    const names = ($('#carts').value || '').split('\n').map(s => s.trim()).filter(Boolean);
+    const n = parseInt($('#weeks').value) || 26;
+    if (!names.length) names.push('');
+    const dates = Array.from({ length: n }, (_, i) => parse(shift(cur, i)).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }));
+    const rows = dates.map(d => `<tr><td class="w">${esc(d)}</td><td class="sg"></td><td class="dt"></td><td class="nt"></td></tr>`).join('');
+    const sp = '<tr class="sp"><td colspan="4"></td></tr>';
+    $('#print').innerHTML = names.map(nm => `<section class="cart">
+      <div class="p-top"><div><p class="eyebrow">Weekly single stock sign off</p>${nm ? `<h1>${esc(nm)}</h1>` : '<h1 class="blank">Cart / area: ______________________</h1>'}<p class="p-meta">Check this cart once a week. Initial the week, add the date and note anything off.</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
+      <table class="log"><colgroup><col style="width:30%"><col style="width:22%"><col style="width:16%"><col></colgroup>
+        <thead>${sp}<tr><th>Week of (Monday)</th><th class="sg">Signed off by</th><th class="dt">Date</th><th>Notes</th></tr></thead>
+        <tfoot><tr class="ft"><td colspan="4">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}</tbody></table></section>`).join('');
   }
   let mode = 'week';
   const pageStyle = o => { $('#page-style').textContent = `@page { size: ${o}; margin: 0; }`; };
-  window.addEventListener('beforeprint', () => (mode === 'grid' ? buildGrid : buildPrint)());
+  try { $('#carts').value = S.carts || ''; $('#weeks').value = S.weeksPer || '26'; } catch (e) {}
+  $('#carts').addEventListener('input', e => { S.carts = e.target.value; save(); });
+  $('#weeks').addEventListener('change', e => { S.weeksPer = e.target.value; save(); });
+  window.addEventListener('beforeprint', () => (mode === 'carts' ? buildCarts : buildPrint)());
   window.addEventListener('afterprint', () => { mode = 'week'; pageStyle('portrait'); });
   $('#print-btn').addEventListener('click', () => { mode = 'week'; pageStyle('portrait'); window.print(); });
-  $('#print-grid').addEventListener('click', () => { mode = 'grid'; pageStyle('landscape'); window.print(); });
+  $('#print-carts').addEventListener('click', () => { mode = 'carts'; pageStyle('portrait'); window.print(); });
 
   render();
 </script>
