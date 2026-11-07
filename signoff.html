@@ -68,7 +68,7 @@
   input.t:focus, textarea.t:focus { border-color: var(--lime); outline: none; }
   textarea.t { width: 100%; height: 130px; padding: 12px; background: var(--surface); border: 1px solid var(--steel); border-radius: 8px; font: 400 14px/1.4 var(--mono); resize: vertical; }
 
-  .sign { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--steel); border-radius: 12px; margin-bottom: 16px; }
+  .sign { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 16px; background: var(--surface); border: 1px solid var(--steel); border-radius: 12px; margin-bottom: 16px; }
   .sign h2, .panel h2 { grid-column: 1 / -1; margin: 0; font: 800 16px var(--body); }
   .sign .hint { grid-column: 1 / -1; margin: 0; font-size: 13px; color: var(--fog); }
   .panel { margin: 0 0 16px; padding: 16px; background: var(--surface); border: 1px solid var(--steel); border-radius: 12px; display: grid; gap: 10px; }
@@ -151,7 +151,6 @@
   <div class="sign" id="sign">
     <h2>Sign off this week</h2>
     <input class="t" id="s-name" maxlength="20" placeholder="Your name or initials" aria-label="Your name or initials" autocomplete="off">
-    <input class="t" id="s-mgr" maxlength="20" placeholder="Manager (optional)" aria-label="Manager" autocomplete="off">
     <button class="btn primary" type="button" id="s-btn">Sign off</button>
     <p class="hint" id="s-hint"></p>
   </div>
@@ -188,7 +187,7 @@
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  let S = { items: [], weeks: {}, who: '', mgr: '' };
+  let S = { items: [], weeks: {}, who: '' };
   try { const v = JSON.parse(localStorage.getItem(KEY) || 'null'); if (v && Array.isArray(v.items)) S = Object.assign(S, v); } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 
@@ -212,7 +211,7 @@
     const signed = !!w.signed;
     $('#status').className = 'status' + (signed ? ' signed' : '');
     $('#status').innerHTML = signed
-      ? `<b>Signed</b><span class="msg">${esc(w.signed.name)}${w.signed.mgr ? ' and ' + esc(w.signed.mgr) : ''}, ${new Date(w.signed.at).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span><button class="btn small" type="button" id="unsign">Reopen</button>`
+      ? `<b>Signed</b><span class="msg">${esc(w.signed.name)}, ${new Date(w.signed.at).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</span><button class="btn small" type="button" id="unsign">Reopen</button>`
       : `<b>${done} of ${total}</b><span class="msg">${total ? (done === total ? 'All checked. Ready to sign off.' : `${total - done} left to check`) : 'Add your items below to start.'}</span>`;
     $('#list').className = 'list' + (editing ? ' editing' : '');
     $('#list').innerHTML = total ? S.items.map(i => {
@@ -224,7 +223,7 @@
         <button class="rm" type="button">Remove</button>
       </div>`;
     }).join('') : '<div class="empty">No items yet. Add them below.</div>';
-    $('#s-name').value = S.who || ''; $('#s-mgr').value = S.mgr || '';
+    $('#s-name').value = S.who || '';
     $('#sign').style.display = signed ? 'none' : '';
     $('#s-hint').textContent = total && done < total ? `${total - done} item${total - done === 1 ? ' is' : 's are'} not checked yet. You can still sign off.` : '';
     $('#edit').textContent = editing ? 'Done editing' : 'Edit list';
@@ -273,8 +272,8 @@
   $('#s-btn').addEventListener('click', () => {
     const name = $('#s-name').value.trim();
     if (!name) { $('#s-name').focus(); return; }
-    S.who = name; S.mgr = $('#s-mgr').value.trim();
-    wk(cur).signed = { name, mgr: S.mgr, at: Date.now() }; save(); render();
+    S.who = name;
+    wk(cur).signed = { name, at: Date.now() }; save(); render();
   });
   $('#status').addEventListener('click', e => {
     if (!e.target.closest('#unsign')) return;
@@ -285,7 +284,7 @@
   function textSheet() {
     const w = wk(cur);
     return `Weekly Sign Off, ${range(cur)}\n` + S.items.map(i => { const c = w.checks[i.id] || {}; return `[${c.done ? 'x' : ' '}] ${i.code ? i.code + ' ' : ''}${i.name}${c.note ? ' (' + c.note + ')' : ''}`; }).join('\n')
-      + (w.signed ? `\nSigned: ${w.signed.name}${w.signed.mgr ? ', manager ' + w.signed.mgr : ''}` : '\nNot signed');
+      + (w.signed ? `\nSigned: ${w.signed.name}` : '\nNot signed');
   }
   $('#copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(textSheet()); toast('Copied.'); } catch (e) { toast('Copy is not allowed here.'); } });
 
@@ -294,7 +293,7 @@
     const rows = S.items.map(i => { const c = w.checks[i.id] || {}; return `<tr><td class="box"><i class="${c.done ? 'on' : ''}"></i></td><td class="code">${esc(i.code)}</td><td>${esc(i.name)}</td><td class="nt">${esc(c.note || '')}</td></tr>`; }).join('');
     const sp = '<tr class="sp"><td colspan="4"></td></tr>';
     const sg = w.signed;
-    const signBlock = `<div class="signoff"><div><span>${sg ? esc(sg.name) : ''}</span>Signed by</div><div><span>${sg ? esc(sg.mgr || '') : ''}</span>Manager</div><div><span>${sg ? new Date(sg.at).toLocaleDateString() : ''}</span>Date</div></div>`;
+    const signBlock = `<div class="signoff"><div><span>${sg ? esc(sg.name) : ''}</span>Signed by</div><div><span>${sg ? new Date(sg.at).toLocaleDateString() : ''}</span>Date</div></div>`;
     $('#print').innerHTML = `<div class="p-top"><div><h1>Weekly Sign Off</h1><p class="p-meta">Single stock &middot; ${esc(range(cur))}</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
       <div class="p-sum"><span><b>${total}</b>items</span><span><b>${done}</b>checked</span><span><b>${total - done}</b>left</span></div>`
       + (total ? `<table><colgroup><col style="width:30pt"><col style="width:62pt"><col><col style="width:30%"></colgroup>
@@ -309,7 +308,7 @@
     const blank = '<td class="cell"></td>'.repeat(NWEEKS);
     let rows = '';
     for (let i = 0; i < n; i++) { const it = S.items[i]; rows += `<tr><td>${it ? esc(it.name) : ''}</td><td>${it ? esc(it.code) : ''}</td>${blank}</tr>`; }
-    ['Signed off by (initials)', 'Manager initials', 'Date signed'].forEach((l, k) => { rows += `<tr class="sgn${k === 0 ? ' first' : ''}"><td class="lab" colspan="2">${l}</td>${blank}</tr>`; });
+    ['Signed off by (initials)', 'Date signed'].forEach((l, k) => { rows += `<tr class="sgn${k === 0 ? ' first' : ''}"><td class="lab" colspan="2">${l}</td>${blank}</tr>`; });
     const cols = `<col style="width:118pt"><col style="width:100pt">` + `<col>`.repeat(NWEEKS);
     $('#print').innerHTML = `<div class="p-top"><div><h1>Weekly Single Stock Sign Off</h1><p class="p-meta">13 weeks from ${esc(fmt(parse(cur)))}. Initial each cart when it is checked, then sign off the week.</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
       <table class="grid"><colgroup>${cols}</colgroup><thead><tr class="sp"><td colspan="${NWEEKS + 2}"></td></tr>

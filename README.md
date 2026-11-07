@@ -46,7 +46,7 @@ Pick a starting list (Opening, Closing, Receiving, Weekly deep clean, or Blank),
 
 ### Weekly Sign Off
 
-Add your single stock items once (one per line, optionally starting with the item code). Each week, tick the items as you check them, add a note if something is off, then sign off with your name and an optional manager name. Weeks run Monday to Sunday, the list stays the same, and the arrows and the Past weeks buttons let you look back at earlier sign-offs. Print this week gives a one-page sheet with a signature block. Print 13-week sheet gives a landscape grid with your carts down the side and 13 weeks across, so you can initial each cart by hand and sign off every week on one page.
+Add your single stock items once (one per line, optionally starting with the item code). Each week, tick the items as you check them, add a note if something is off, then sign off with your name. Weeks run Monday to Sunday, the list stays the same, and the arrows and the Past weeks buttons let you look back at earlier sign-offs. Print this week gives a one-page sheet with a signature block. Print 13-week sheet gives a landscape grid with your carts down the side and 13 weeks across, so you can initial each cart by hand and sign off every week on one page.
 
 ## How the math works
 
