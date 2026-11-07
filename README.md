@@ -44,6 +44,10 @@ Type a note, pick an area (Store, Meat, Receiving, Front end, Other), add your i
 
 Pick a starting list (Opening, Closing, Receiving, Weekly deep clean, or Blank), then change the title and the items to fit your department. Start a line with # to make a section heading. The sheet has a box to tick and an initials column for each task, plus optional date, name and shift lines and notes lines. Your edits are saved on the device. Tap Print for a clean one-page sheet.
 
+### Weekly Sign Off
+
+Add your single stock items once (one per line, optionally starting with the item code). Each week, tick the items as you check them, add a note if something is off, then sign off with your name and an optional manager name. Weeks run Monday to Sunday, the list stays the same, and the arrows and the Past weeks buttons let you look back at earlier sign-offs. Print this week gives a one-page sheet with a signature block.
+
 ## How the math works
 
 **Case Count**
@@ -90,6 +94,7 @@ Your counts are stored in your own browser on the device you are using. Nothing 
 | `index.html` | The landing page that leads to both tools |
 | `notes.html` | Notes Board for leaving notes for the store |
 | `checklist.html` | Printable checklists (opening, closing, receiving, deep clean) |
+| `signoff.html` | Weekly Sign Off for the single stock check |
 | `counts.html` | The tools: Case Count and Weight Count, in one file |
 | `weight.html` | Redirects old links to the Weight Count tab |
 | `LICENSE` | License terms |

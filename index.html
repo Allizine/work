@@ -132,6 +132,12 @@
         <div class="saved" id="saved-notes"></div>
         <span class="open">Open Notes Board</span>
       </a>
+      <a class="tool" href="signoff.html">
+        <h2>Weekly Sign Off</h2>
+        <p>Your single stock check, once a week. Tick each item, sign off, and print the sheet.</p>
+        <div class="saved" id="saved-signoff"></div>
+        <span class="open">Open Weekly Sign Off</span>
+      </a>
       <a class="tool" href="checklist.html">
         <h2>Print Checklist</h2>
         <p>Opening, closing, receiving and deep clean lists. Edit them and print a sheet with boxes to tick.</p>
@@ -194,6 +200,16 @@
   }
   showSaved('saved-cases', summarizeCases());
   showSaved('saved-weight', summarizeWeight());
+  (function () {
+    let s = {}; try { s = JSON.parse(localStorage.getItem('so1_state') || '{}') || {}; } catch (e) {}
+    const items = Array.isArray(s.items) ? s.items : [];
+    const d = new Date(), m = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
+    const key = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(m.getDate()).padStart(2, '0')}`;
+    const w = (s.weeks || {})[key] || { checks: {} };
+    const done = items.filter(i => (w.checks[i.id] || {}).done).length;
+    document.getElementById('saved-signoff').innerHTML = !items.length ? 'No items yet.'
+      : w.signed ? 'This week<strong class="over">Signed off</strong>' : `This week: ${done} of ${items.length} checked<strong>Not signed off</strong>`;
+  })();
   (function () {
     const list = load('nb1_notes'), open = list.filter(n => !n.done).length;
     document.getElementById('saved-notes').innerHTML = list.length
