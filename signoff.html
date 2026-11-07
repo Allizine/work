@@ -117,6 +117,16 @@
     #print .signoff div { flex: 1; padding-top: 22pt; border-bottom: 1pt solid #07080C; font: 700 8pt var(--body); color: #333; }
     #print .signoff div span { display: block; margin-bottom: 2pt; font: 600 10.5pt var(--body); color: #0b0d12; min-height: 13pt; }
     #print .signoff div i { font-style: normal; display: block; margin-top: 3pt; }
+    #print table.grid { font-size: 8.5pt; }
+    #print table.grid th { padding: 5pt 2pt; text-align: center; font-size: 8pt; }
+    #print table.grid th.l { text-align: left; padding-left: 6pt; }
+    #print table.grid td { height: 22pt; padding: 2pt 6pt; border: 0.5pt solid #bbb; font-size: 9.5pt; }
+    #print table.grid td.cell { padding: 0; }
+    #print table.grid tbody tr:nth-child(even) td { background: #fff; }
+    #print table.grid tr.sp td { height: 6mm; padding: 0; border: 0; }
+    #print table.grid tr.sgn td { height: 26pt; border-color: #999; font-weight: 800; }
+    #print table.grid tr.sgn.first td { border-top: 1.5pt solid #07080C; }
+    #print table.grid tr.sgn td.lab { font-size: 9pt; }
     #print tr.ft td { height: 14mm; vertical-align: top; padding: 10pt 0 0; border: 0; background: none !important; font: 500 8pt var(--body); color: #777; text-align: center; }
   }
 </style>
@@ -161,6 +171,7 @@
     <div class="hist" id="hist"></div>
     <div class="row">
       <button class="btn small" type="button" id="print-btn">Print this week</button>
+      <button class="btn small" type="button" id="print-grid">Print 13-week sheet</button>
       <button class="btn small" type="button" id="copy">Copy as text</button>
     </div>
   </div>
@@ -290,8 +301,27 @@
         <thead>${sp}<tr><th class="box"></th><th>Code</th><th>Item</th><th>Note</th></tr></thead>
         <tfoot><tr class="ft"><td colspan="4">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}<tr class="sg"><td colspan="4">${signBlock}</td></tr></tbody></table>` : signBlock);
   }
-  window.addEventListener('beforeprint', buildPrint);
-  $('#print-btn').addEventListener('click', () => window.print());
+  /* 13-week landscape sheet: carts down the side, weeks across, initials by hand */
+  const NWEEKS = 13;
+  function buildGrid() {
+    const weeks = Array.from({ length: NWEEKS }, (_, i) => fmt(parse(shift(cur, i))));
+    const n = Math.max(12, S.items.length);
+    const blank = '<td class="cell"></td>'.repeat(NWEEKS);
+    let rows = '';
+    for (let i = 0; i < n; i++) { const it = S.items[i]; rows += `<tr><td>${it ? esc(it.name) : ''}</td><td>${it ? esc(it.code) : ''}</td>${blank}</tr>`; }
+    ['Signed off by (initials)', 'Manager initials', 'Date signed'].forEach((l, k) => { rows += `<tr class="sgn${k === 0 ? ' first' : ''}"><td class="lab" colspan="2">${l}</td>${blank}</tr>`; });
+    const cols = `<col style="width:118pt"><col style="width:100pt">` + `<col>`.repeat(NWEEKS);
+    $('#print').innerHTML = `<div class="p-top"><div><h1>Weekly Single Stock Sign Off</h1><p class="p-meta">13 weeks from ${esc(fmt(parse(cur)))}. Initial each cart when it is checked, then sign off the week.</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
+      <table class="grid"><colgroup>${cols}</colgroup><thead><tr class="sp"><td colspan="${NWEEKS + 2}"></td></tr>
+        <tr><th class="l">Cart / location</th><th class="l">Code / notes</th>${weeks.map(w => `<th>${esc(w)}</th>`).join('')}</tr></thead>
+        <tfoot><tr class="ft"><td colspan="${NWEEKS + 2}">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}</tbody></table>`;
+  }
+  let mode = 'week';
+  const pageStyle = o => { $('#page-style').textContent = `@page { size: ${o}; margin: 0; }`; };
+  window.addEventListener('beforeprint', () => (mode === 'grid' ? buildGrid : buildPrint)());
+  window.addEventListener('afterprint', () => { mode = 'week'; pageStyle('portrait'); });
+  $('#print-btn').addEventListener('click', () => { mode = 'week'; pageStyle('portrait'); window.print(); });
+  $('#print-grid').addEventListener('click', () => { mode = 'grid'; pageStyle('landscape'); window.print(); });
 
   render();
 </script>
