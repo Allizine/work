@@ -122,10 +122,12 @@
     #print .cart h1 { font-size: 24pt; }
     #print .cart h1.blank { font-size: 15pt; font-weight: 700; }
     #print table.log th.c, #print table.log td.c { text-align: center; }
-    #print table.log td { height: 22pt; padding: 2pt 8pt; border: 0; border-bottom: 0.5pt solid #bbb; font-size: 10pt; }
+    #print table.log td { height: 27pt; padding: 2pt 6pt; border: 0; border-bottom: 0.5pt solid #bbb; border-left: 0.5pt solid #bbb; font-size: 10pt; }
+    #print table.log td.b0 { border-left: 1.5pt solid #07080C; }
+    #print table.log th { padding-left: 6pt; border-left: 0.5pt solid #bbb; }
+    #print table.log th.b0 { border-left: 1.5pt solid #07080C; }
     #print table.log tbody tr:nth-child(even) td { background: #f5f5f2; }
     #print table.log td.w { font-weight: 800; }
-    #print table.log td.sg, #print table.log td.dt { border-left: 0.5pt solid #bbb; }
     #print table.log tr.sp td { height: 8mm; padding: 0; border: 0; background: none !important; }
     #print tr.ft td { height: 14mm; vertical-align: top; padding: 10pt 0 0; border: 0; background: none !important; font: 500 8pt var(--body); color: #777; text-align: center; }
   }
@@ -170,7 +172,7 @@
     <p class="hint">Each cart or area gets its own sheet to keep with it. Enter one name per line and print a sheet for each. Leave it empty for a blank sheet you write the name on.</p>
     <textarea class="t" id="carts" placeholder="Dairy cart&#10;End cap A&#10;Freezer rack" aria-label="Cart or area names" style="height:96px"></textarea>
     <div class="row">
-      <select class="t" id="weeks" aria-label="Weeks per sheet" style="height:38px;padding:0 10px;background:var(--surface);border:1px solid var(--steel);border-radius:8px"><option value="13">13 weeks</option><option value="26" selected>26 weeks</option><option value="52">52 weeks</option></select>
+      <select class="t" id="weeks" aria-label="Weeks per sheet" style="height:38px;padding:0 10px;background:var(--surface);border:1px solid var(--steel);border-radius:8px"><option value="26">26 weekends</option><option value="52" selected>52 weekends (a year)</option></select>
       <button class="btn small primary" type="button" id="print-carts">Print cart sheets</button>
     </div>
   </div>
@@ -312,26 +314,36 @@
   /* one sign-off log per cart or area: weeks down the page, initials by hand */
   function buildCarts() {
     const names = ($('#carts').value || '').split('\n').map(s => s.trim()).filter(Boolean);
-    const n = parseInt($('#weeks').value) || 26;
+    const n = parseInt($('#weeks').value) || 52, per = 13, blocks = Math.ceil(n / per);
     if (!names.length) names.push('');
-    const dates = Array.from({ length: n }, (_, i) => (() => { const d = parse(shift(cur, i)); d.setDate(d.getDate() + 5); return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }); })());
-    const rows = dates.map(d => `<tr><td class="w">${esc(d)}</td><td class="sg"></td><td class="dt"></td></tr>`).join('');
-    const sp = '<tr class="sp"><td colspan="3"></td></tr>';
+    const start = parse(cur); start.setDate(start.getDate() + 5);
+    const endD = new Date(start); endD.setDate(endD.getDate() + 7 * (n - 1));
+    const fullD = d => d.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    const label = i => { const d = new Date(start); d.setDate(d.getDate() + 7 * i); return d.toLocaleDateString([], { month: 'short', day: 'numeric' }); };
+    let head = '', rows = '';
+    for (let b = 0; b < blocks; b++) head += `<th class="b0">Weekend</th><th>Signed by</th><th>Date</th>`;
+    for (let i = 0; i < per; i++) {
+      rows += '<tr>';
+      for (let b = 0; b < blocks; b++) { const k = b * per + i; rows += k < n ? `<td class="b0 w">${esc(label(k))}</td><td></td><td></td>` : '<td class="b0"></td><td></td><td></td>'; }
+      rows += '</tr>';
+    }
+    const cols = `<col style="width:${Math.round(100 / blocks * 0.30 * 10) / 10}%"><col style="width:${Math.round(100 / blocks * 0.38 * 10) / 10}%"><col style="width:${Math.round(100 / blocks * 0.32 * 10) / 10}%">`.repeat(blocks);
+    const sp = `<tr class="sp"><td colspan="${blocks * 3}"></td></tr>`;
     $('#print').innerHTML = names.map(nm => `<section class="cart">
-      <div class="p-top"><div><p class="eyebrow">Weekly single stock sign off</p>${nm ? `<h1>${esc(nm)}</h1>` : '<h1 class="blank">Cart / area: ______________________</h1>'}<p class="p-meta">Check this cart every weekend. Initial the row and add the date you did it.</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
-      <table class="log"><colgroup><col style="width:38%"><col style="width:34%"><col></colgroup>
-        <thead>${sp}<tr><th>Weekend of</th><th class="sg">Signed off by</th><th class="dt">Date done</th></tr></thead>
-        <tfoot><tr class="ft"><td colspan="3">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}</tbody></table></section>`).join('');
+      <div class="p-top"><div><p class="eyebrow">Weekly single stock sign off</p>${nm ? `<h1>${esc(nm)}</h1>` : '<h1 class="blank">Cart / area: ______________________</h1>'}<p class="p-meta">Check this cart every weekend. Initial the row and add the date you did it. ${esc(fullD(start))} to ${esc(fullD(endD))}.</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
+      <table class="log"><colgroup>${cols}</colgroup>
+        <thead>${sp}<tr>${head}</tr></thead>
+        <tfoot><tr class="ft"><td colspan="${blocks * 3}">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}</tbody></table></section>`).join('');
   }
   let mode = 'week';
   const pageStyle = o => { $('#page-style').textContent = `@page { size: ${o}; margin: 0; }`; };
-  try { $('#carts').value = S.carts || ''; $('#weeks').value = S.weeksPer || '26'; } catch (e) {}
+  try { $('#carts').value = S.carts || ''; $('#weeks').value = (S.weeksPer === '26' ? '26' : '52'); } catch (e) {}
   $('#carts').addEventListener('input', e => { S.carts = e.target.value; save(); });
   $('#weeks').addEventListener('change', e => { S.weeksPer = e.target.value; save(); });
   window.addEventListener('beforeprint', () => (mode === 'carts' ? buildCarts : buildPrint)());
   window.addEventListener('afterprint', () => { mode = 'week'; pageStyle('portrait'); });
   $('#print-btn').addEventListener('click', () => { mode = 'week'; pageStyle('portrait'); window.print(); });
-  $('#print-carts').addEventListener('click', () => { mode = 'carts'; pageStyle('portrait'); window.print(); });
+  $('#print-carts').addEventListener('click', () => { mode = 'carts'; pageStyle('landscape'); window.print(); });
 
   render();
 </script>
