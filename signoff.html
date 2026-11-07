@@ -122,7 +122,7 @@
     #print .cart h1 { font-size: 24pt; }
     #print .cart h1.blank { font-size: 15pt; font-weight: 700; }
     #print table.log th.c, #print table.log td.c { text-align: center; }
-    #print table.log td { height: 21pt; padding: 2pt 8pt; border: 0; border-bottom: 0.5pt solid #bbb; font-size: 10pt; }
+    #print table.log td { height: 22pt; padding: 2pt 8pt; border: 0; border-bottom: 0.5pt solid #bbb; font-size: 10pt; }
     #print table.log tbody tr:nth-child(even) td { background: #f5f5f2; }
     #print table.log td.w { font-weight: 800; }
     #print table.log td.sg, #print table.log td.dt { border-left: 0.5pt solid #bbb; }
@@ -314,14 +314,14 @@
     const names = ($('#carts').value || '').split('\n').map(s => s.trim()).filter(Boolean);
     const n = parseInt($('#weeks').value) || 26;
     if (!names.length) names.push('');
-    const dates = Array.from({ length: n }, (_, i) => parse(shift(cur, i)).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }));
-    const rows = dates.map(d => `<tr><td class="w">${esc(d)}</td><td class="sg"></td><td class="dt"></td><td class="nt"></td></tr>`).join('');
-    const sp = '<tr class="sp"><td colspan="4"></td></tr>';
+    const dates = Array.from({ length: n }, (_, i) => (() => { const d = parse(shift(cur, i)); d.setDate(d.getDate() + 5); return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }); })());
+    const rows = dates.map(d => `<tr><td class="w">${esc(d)}</td><td class="sg"></td><td class="dt"></td></tr>`).join('');
+    const sp = '<tr class="sp"><td colspan="3"></td></tr>';
     $('#print').innerHTML = names.map(nm => `<section class="cart">
-      <div class="p-top"><div><p class="eyebrow">Weekly single stock sign off</p>${nm ? `<h1>${esc(nm)}</h1>` : '<h1 class="blank">Cart / area: ______________________</h1>'}<p class="p-meta">Check this cart once a week. Initial the week, add the date and note anything off.</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
-      <table class="log"><colgroup><col style="width:30%"><col style="width:22%"><col style="width:16%"><col></colgroup>
-        <thead>${sp}<tr><th>Week of (Monday)</th><th class="sg">Signed off by</th><th class="dt">Date</th><th>Notes</th></tr></thead>
-        <tfoot><tr class="ft"><td colspan="4">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}</tbody></table></section>`).join('');
+      <div class="p-top"><div><p class="eyebrow">Weekly single stock sign off</p>${nm ? `<h1>${esc(nm)}</h1>` : '<h1 class="blank">Cart / area: ______________________</h1>'}<p class="p-meta">Check this cart every weekend. Initial the row and add the date you did it.</p></div><div class="p-brand">Herorical<span>Sign off</span></div></div>
+      <table class="log"><colgroup><col style="width:38%"><col style="width:34%"><col></colgroup>
+        <thead>${sp}<tr><th>Weekend of</th><th class="sg">Signed off by</th><th class="dt">Date done</th></tr></thead>
+        <tfoot><tr class="ft"><td colspan="3">&copy; 2026 Herorical. All rights reserved.</td></tr></tfoot><tbody>${rows}</tbody></table></section>`).join('');
   }
   let mode = 'week';
   const pageStyle = o => { $('#page-style').textContent = `@page { size: ${o}; margin: 0; }`; };
